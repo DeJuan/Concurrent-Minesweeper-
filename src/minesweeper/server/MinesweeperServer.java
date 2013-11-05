@@ -6,6 +6,8 @@ import java.util.*;
 
 public class MinesweeperServer {
     private final ServerSocket serverSocket;
+    private int playerCounter;
+    private Object lock = new Object();
     /**
      * True if the server should _not_ disconnect a client after a BOOM message.
      */
@@ -20,7 +22,22 @@ public class MinesweeperServer {
         serverSocket = new ServerSocket(port);
         this.debug = debug;
     }
+    
+    public void incrementPlayers()
+    {
+    	synchronized(lock)
+    	{
+    		playerCounter+=1;
+    	}
+    }
 
+    public void decrementPlayers()
+    {
+    	synchronized(lock)
+    	{
+    		playerCounter -=1;
+    	}
+    }
     /**
      * Run the server, listening for client connections and handling them.
      * Never returns unless an exception is thrown.
@@ -31,18 +48,42 @@ public class MinesweeperServer {
     public void serve() throws IOException {
         while (true) {
             // block until a client connects
-            Socket socket = serverSocket.accept();
-
-            // handle the client
-            try {
-                handleConnection(socket);
-            } catch (IOException e) {
-                e.printStackTrace(); // but don't terminate serve()
-            } finally {
-                socket.close();
+            final Socket socket = serverSocket.accept();
+            Thread t = new Thread(new Runnable()
+            {
+            	public void run() 
+            	{
+            		try 
+            		{
+                        handleConnection(socket);
+                        incrementPlayers();
+                    } 
+            		catch (IOException e) 
+                    {
+                        e.printStackTrace(); // but don't terminate serve()
+                    } 
+            		finally 
+                    {
+                        try 
+                        {
+							socket.close();
+							decrementPlayers();
+						} 
+                        catch (IOException e) 
+						{
+							e.printStackTrace();
+						}
+                    }
+            	}
             }
-        }
-    }
+        );
+            t.start();
+           
+            }}
+            
+            // handle the client
+            
+    
 
     /**
      * Handle a single client connection. Returns when client disconnects.
