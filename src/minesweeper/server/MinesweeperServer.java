@@ -4,10 +4,13 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
+import ast.Board;
+
 public class MinesweeperServer {
     private final ServerSocket serverSocket;
     private int playerCounter;
     private Object lock = new Object();
+    public static Board board;
     /**
      * True if the server should _not_ disconnect a client after a BOOM message.
      */
@@ -56,7 +59,7 @@ public class MinesweeperServer {
             		try 
             		{
             			incrementPlayers();
-                        handleConnection(socket);
+                        handleConnection(socket, board);
                     } 
             		catch (IOException e) 
                     {
@@ -91,15 +94,18 @@ public class MinesweeperServer {
      * @param socket socket where the client is connected
      * @throws IOException if connection has an error or terminates unexpectedly
      */
-    private void handleConnection(Socket socket) throws IOException {
+    private void handleConnection(Socket socket, Board board) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        System.out.println("Welcome To Minesweeper. There are " + playerCounter + "players, including you, at this time.");
+        out.println("Welcome To Minesweeper. There are " + playerCounter + " players, including you, at this time.");
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
-                String output = handleRequest(line);
+                String output = handleRequest(line, board);
                 if (output != null) {
                     out.println(output);
+                if (output == "Baibai!" || output == "BOOM!"){
+                	socket.close();
+                }
                 }
             }
         } finally {
@@ -114,7 +120,7 @@ public class MinesweeperServer {
      * @param input message from client
      * @return message to client
      */
-    private String handleRequest(String input) {
+    private String handleRequest(String input, Board board) {
         String regex = "(look)|(dig -?\\d+ -?\\d+)|(flag -?\\d+ -?\\d+)|"
                 + "(deflag -?\\d+ -?\\d+)|(help)|(bye)";
         if ( ! input.matches(regex)) {
@@ -124,25 +130,26 @@ public class MinesweeperServer {
         String[] tokens = input.split(" ");
         if (tokens[0].equals("look")) {
             // 'look' request
-            // TODO Question 5
+           return board.processLook();
+
         } else if (tokens[0].equals("help")) {
             // 'help' request
-            // TODO Question 5
+            return board.processHelp();
         } else if (tokens[0].equals("bye")) {
             // 'bye' request
-            // TODO Question 5
+            return "Baibai!";
         } else {
             int x = Integer.parseInt(tokens[1]);
             int y = Integer.parseInt(tokens[2]);
             if (tokens[0].equals("dig")) {
                 // 'dig x y' request
-                // TODO Question 5
+                return board.processDig(input);
             } else if (tokens[0].equals("flag")) {
                 // 'flag x y' request
-                // TODO Question 5
+                return board.processFlag(input);
             } else if (tokens[0].equals("deflag")) {
                 // 'deflag x y' request
-                // TODO Question 5
+                return board.processDeflag(input);
             }
         }
         // Should never get here--make sure to return in each of the valid cases above.
@@ -253,6 +260,12 @@ public class MinesweeperServer {
         // TODO: Continue your implementation here.
         
         MinesweeperServer server = new MinesweeperServer(port, debug);
+        if (file != null){
+        	board = new Board();
+        }
+        else if(size != null){
+        	board = new Board(size);
+        }
         server.serve();
     }
 }

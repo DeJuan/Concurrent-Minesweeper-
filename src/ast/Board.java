@@ -8,8 +8,17 @@ import java.util.concurrent.LinkedBlockingQueue;
  * This class is used to represent the board state for our implementation of Minesweeper.
  * It has two representation invariants:
  * 1) Size must not be negative.
- * 2) Two threads should not concurrently modify the board. 
+ * 2) The boards are square.
+ * 2) Two threads should not concurrently do anything to modify the board. 
  *
+ *The first is explicitly enforced.
+ *The second is ensured by making all methods which modify the board synchronized.
+ *In other words, Board utilizes the monitor pattern.
+ *All players are sharing the same board, so acquiring the lock on the board will prevent
+ * any other synchonized method from being carried out at the same time since there's only one 
+ * "this". The methods that aren't synchronized don't need to be, as the players have no way to access
+ * those methods, and even if they did, using them concurrently would be fine, with the exception
+ * of the constructor, but there's only one board at any time so that's not an issue. 
  */
 public class Board
 {
@@ -19,6 +28,7 @@ public class Board
 	
 	public void checkRep(){
 		assert(this.size >= 2);
+		assert(boardState.get(0).size() == boardState.get(1).size());
 	}
 	/**
 	 * Default constructor: If size not specified, creates a Board instance of size 10x10. 
@@ -77,16 +87,16 @@ public class Board
 	 *  @returns A "grid" string representation of the current board as a player should see it.
 	 */
 	@Override
-	public String toString()
+	public synchronized String toString()
 	{
-		StringBuilder boardString = new StringBuilder(this.size*this.size + this.size);
+		StringBuilder boardString = new StringBuilder(this.size*this.size + this.size*2);
 		for(int row = 0; row < this.size; row++)
 		{
 			for(int col = 0; col < this.size; col++)
 			{
 				boardString.append(this.boardState.get(row).get(col).toString());
 			}
-			boardString.append("\n");
+			boardString.append("\r\n");
 		}
 		return boardString.toString();
 	}
@@ -96,7 +106,7 @@ public class Board
 	 * "-", "F", etc.
 	 */
 	
-	public String[][] getBoardState()
+	public synchronized String[][] getBoardState()
 	{
 		String[][] boardRep = new String[this.size][this.size];
 		for(int row = 0; row < this.size; row++)
@@ -169,7 +179,7 @@ public class Board
 	 * This method returns the current string representation of the board, as a player should see it.
 	 * @return String indicating the current Board state to a player.
 	 */
-	public String processLook()
+	public synchronized String processLook()
 	{
 		return this.toString();
 	}
@@ -180,7 +190,7 @@ public class Board
 	 * @param input: A string in the format "flag X Y" 
 	 * @return String representation of the currentBoard state with the updated Flag.
 	 */
-	public String processFlag(String input)
+	public synchronized String processFlag(String input)
 	{
 		int X = Integer.valueOf(input.substring(5, 6));
 		int Y = Integer.valueOf(input.substring(7, 8));
@@ -195,7 +205,7 @@ public class Board
 	 * @param input: String in the format "deflag X Y" 
 	 * @return String: representation of the board state after execution of deflag
 	 */
-	public String processDeflag(String input)//string is "deflag_X_Y"
+	public synchronized String processDeflag(String input)//string is "deflag_X_Y"
 	{
 		int X = Integer.valueOf(input.substring(7,8));
 		int Y = Integer.valueOf(input.substring(9,10));
@@ -230,7 +240,7 @@ public class Board
 	 * @return If no bomb, returns updated state of board.
 	 * @return If bomb, returns BOOM!
 	 */
-	public String processDig(String input)
+	public synchronized String processDig(String input)
 	{
 		boolean bombHit = false;
 		//Input is dig_X_Y
@@ -304,6 +314,7 @@ public class Board
 			if(bombHit)
 			{
 				return "BOOM!";
+				
 			}
 			return this.toString();
 		}
