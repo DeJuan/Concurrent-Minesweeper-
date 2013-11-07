@@ -2,6 +2,10 @@ package ast;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * This class is used to represent the board state for our implementation of Minesweeper.
@@ -27,6 +31,7 @@ public class Board
 		{
 			this.boardState.add(createRow());
 		}
+		//setAllCounts();
 	}
 	
 	/*
@@ -45,6 +50,7 @@ public class Board
 		{
 			this.boardState.add(createRow());
 		}
+		//setAllCounts();
 	}
 	
 	
@@ -92,6 +98,36 @@ public class Board
 	public ArrayList<ArrayList<Square>> getActualBoardStateForDebugPurposes()
 	{
 		return this.boardState;
+	}
+	
+	public void setAllCounts()
+	{
+		Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
+		ArrayList<Square> visited = new ArrayList<Square>();
+		squareQueue.add(boardState.get(0).get(0));
+		while (! squareQueue.isEmpty())
+		{
+			int bombsFound = 0;
+			Square currentSquare = squareQueue.poll();
+			visited.add(currentSquare);
+			int x = (int) currentSquare.getLocation().get(0);
+			int y = (int) currentSquare.getLocation().get(1);
+			ArrayList<Square> currentAdj = adjacentSquares(x,y);
+			for(Square s: currentAdj)
+			{
+				if (s.getDescription() == "bomb")
+				{
+					bombsFound += 1;
+				}
+				
+				if (!visited.contains(s))
+				{
+					squareQueue.add(s);
+				}
+			}
+			currentSquare.setCount(bombsFound);
+		}
+			
 	}
 	/*
 	 * User-to-Server Minesweeper Message Protocol
@@ -158,17 +194,45 @@ public class Board
 		if(requestedSquare.getDescription() == "bomb")
 		{
 			requestedSquare.setStatus(" "); //Clear the bomb away.
-			ArrayList<Integer> bombCount = new ArrayList<Integer>(); //set up a counter that we'll need for fixing the surrounding squares.
-			
+		
 			//Compose an array list containing all squares adjacent to this one. 
 			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
 			
 			//We want to examine every square around these adjacent squares, and bombcount for all of them.
 			for (Square s: adjacentToThisSquare)
 			{
-				ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare;	
+				int bombsFound = 0; //Number of adjacent bombs
+				int xData = (int) s.getLocation().get(0); //This square's X location
+				int yData = (int) s.getLocation().get(1); //This squares Y location
+				ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare = adjacentSquares(xData,yData); //Use it to call adjacency again
+				for (Square newLevel : squaresAdjacentToSquaresAdjacentToThisSquare) //For every square we just located:
+				{
+					if (newLevel.getStatus() == "bomb") //If that square is a bomb:
+					{
+						bombsFound +=1; //Increment our bombsFound counter.
+					}
+				}
+				s.setCount(bombsFound); //Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
 			}
-			
+			return "BOOM!";
+		}
+		if (requestedSquare.getDescription() == "untouched"){
+			requestedSquare.setStatus(" ");
+			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
+			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
+			squareQueue.addAll(adjacents);
+			while (!squareQueue.isEmpty()){
+				Square s = squareQueue.poll();
+				
+				if (s.getDescription() != "bomb")
+				{
+					s.setStatus(" ");
+					int xLoc = (int) s.getLocation().get(0);
+					int yLoc = (int) s.getLocation().get(1);
+					squareQueue.addAll(adjacentSquares(xLoc,yLoc));
+				}
+			}
+			return this.toString();
 		}
 		return this.toString();
 	}
@@ -194,7 +258,7 @@ public class Board
 		{ 
 			upValid = false;
 		}
-		if (downOne < this.size)
+		if (downOne >= this.size)
 		{
 			downValid = false;
 		}

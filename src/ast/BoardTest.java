@@ -26,7 +26,7 @@ public class BoardTest {
 			}
 		}
 		assertArrayEquals(expectation, testBoard.getBoardState());
-		//System.out.println(testBoard.toString());
+		
 	}
 	
 	@Test

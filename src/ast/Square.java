@@ -15,19 +15,25 @@ public class Square
 	{
 		location.add(x);
 		location.add(y);
+		if (x == 2 && y == 2){
+			this.status = "-";
+			this.description = "bomb";
+		}
+		/*
 		double decider = Math.random();
 		if (decider < .25)
 		{
 			this.status = "-";
 			this.description = "bomb";
 		}
+		*/
 		else
 		{
 			setStatus("-");
 		}
 		
 	}
-	/*
+	
 	public ArrayList<Integer> getLocation()
 	{
 		ArrayList<Integer> locationCopy = new ArrayList<Integer>();
@@ -35,7 +41,7 @@ public class Square
 		locationCopy.add(location.get(1));
 		return locationCopy;
 	}
-	*/
+	
 	public String getStatus()
 	{
 		return this.status;
@@ -67,6 +73,10 @@ public class Square
 		if (this.status == " ")
 		{
 			this.description = "dug";
+			if(count != 0)
+			{
+				this.status = "" + count;
+			}
 		}
 	}
 	
@@ -74,6 +84,15 @@ public class Square
 	public void setCount(int i)
 	{
 		this.count = i;
+		if (this.count == 0 || this.description != "untouched") 
+		{
+			this.status = " ";
+		}
+		
+		else if(this.count != 0 || this.description != "untouched")
+		{
+			this.status = "" + this.count;
+		}
 	}
 	
 	public int getCount()
