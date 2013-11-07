@@ -8,11 +8,13 @@ public class Square
 	private String status;
 	private String description;
 	private int count;
+	private final ArrayList<Integer> location = new ArrayList<Integer>();
 	
 	
-	public Square()
+	public Square(int x, int y)
 	{
-		
+		location.add(x);
+		location.add(y);
 		double decider = Math.random();
 		if (decider < .25)
 		{

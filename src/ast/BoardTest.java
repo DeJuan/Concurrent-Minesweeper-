@@ -89,5 +89,10 @@ public class BoardTest {
 		assertArrayEquals(expectation, testBoard.getBoardState());
 	}
 	
+	@Test
+	public void testingHelpMessage(){
+		Board testBoard = new Board();
+		testBoard.processHelp();
+	}
 
 }

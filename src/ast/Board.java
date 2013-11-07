@@ -14,20 +14,21 @@ public class Board
 {
 	private final int size;
 	private ArrayList<ArrayList<Square>> boardState;
+	private int rowCounter = 0;
 	
 	/*
 	 * Default constructor: If size not specified, default to 10. 
 	 */
-	public Board()
-	{
+	
+	public Board(){
 		this.size = 10;
-		
 		this.boardState = new ArrayList<ArrayList<Square>>();
-		for(int j = 0; j < this.size; j++)
+		for(int r = 0; r < this.size; r++)
 		{
 			this.boardState.add(createRow());
 		}
 	}
+	
 	/*
 	 * If we do have a size we want, use it
 	 */
@@ -39,23 +40,19 @@ public class Board
 			throw new IllegalArgumentException("The board cannot have a negative size!");
 		}
 		this.size = size;
-		ArrayList<Square> row = new ArrayList<Square>();
-		for(int i = 0; i < this.size; i++)
-		{
-			row.add(new Square());
-		}
 		this.boardState = new ArrayList<ArrayList<Square>>();
-		for(int j = 0; j < this.size; j++)
+		for(int r = 0; r < this.size; r++)
 		{
-			this.boardState.add(row);
+			this.boardState.add(createRow());
 		}
 	}
+	
 	
 	/*
 	 * Returns the board size.  We shouldn't ever change size once the board
 	 * has been created, so it's a final.
 	 */
-	public final int getBoardSize()
+	public int getBoardSize()
 	{
 		return this.size;
 	}
@@ -77,6 +74,8 @@ public class Board
 	 * Returns the state of the board. This returns the type of square that it is, i.e.
 	 * "-", "F", etc.
 	 */
+	
+	
 	public String[][] getBoardState()
 	{
 		String[][] boardRep = new String[this.size][this.size];
@@ -132,6 +131,11 @@ public class Board
 		}
 		return this.toString();
 	}
+	
+	public void processHelp()
+	{
+		  System.out.println("Valid Commands are: (LOOK :== \"look\"  | DIG :== \"dig\" SPACE X SPACE Y  | FLAG  :== \"flag\" SPACE X SPACE Y | DEFLAG :== \"deflag\" SPACE X SPACE Y | HELP_REQ :== \"help\" | BYE :== \"bye\" ) NEWLINE. X and Y are ints.");				 
+	}
 	public String processDig(String input)
 	{
 		//Input is dig_X_Y
@@ -142,21 +146,27 @@ public class Board
 			return processLook();
 		}
 		//At this point, we know the square indicated exists, so this next line is okay to do:
-		Square requestedSquare = boardState.get(locationDataX).get(locationDataY); 
+		Square requestedSquare = boardState.get(locationDataX).get(locationDataY);
+		
+		//If this is true, we've already dug it or flagged it so leave it be & return current state. 
 		if(requestedSquare.getDescription() != "untouched")
 		{
 			return this.toString();
 		}
 		
+		//Hard section. What to do if we get a bomb. 
 		if(requestedSquare.getDescription() == "bomb")
 		{
-			requestedSquare.setStatus(" ");
-			int bombCount = 0;
+			requestedSquare.setStatus(" "); //Clear the bomb away.
+			ArrayList<Integer> bombCount = new ArrayList<Integer>(); //set up a counter that we'll need for fixing the surrounding squares.
+			
+			//Compose an array list containing all squares adjacent to this one. 
 			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
-			ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare;
+			
+			//We want to examine every square around these adjacent squares, and bombcount for all of them.
 			for (Square s: adjacentToThisSquare)
 			{
-				
+				ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare;	
 			}
 			
 		}
@@ -252,11 +262,13 @@ public class Board
 	
 	public ArrayList<Square> createRow()
 	{
+		
 		ArrayList<Square> row = new ArrayList<Square>();
-		for(int i = 0; i < this.size; i++)
+		for(int j = 0; j < this.size; j++)
 		{
-			row.add(new Square());
+			row.add(new Square(this.rowCounter, j));
 		}
+		this.rowCounter +=1;
 		return row;
 	}
 }
