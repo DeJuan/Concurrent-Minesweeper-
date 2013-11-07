@@ -1,13 +1,18 @@
 package ast;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Square 
 {
 	private String status;
 	private String description;
 	private int count;
 	
+	
 	public Square()
 	{
+		
 		double decider = Math.random();
 		if (decider < .25)
 		{
@@ -20,7 +25,15 @@ public class Square
 		}
 		
 	}
-	
+	/*
+	public ArrayList<Integer> getLocation()
+	{
+		ArrayList<Integer> locationCopy = new ArrayList<Integer>();
+		locationCopy.add(location.get(0));
+		locationCopy.add(location.get(1));
+		return locationCopy;
+	}
+	*/
 	public String getStatus()
 	{
 		return this.status;
@@ -29,6 +42,11 @@ public class Square
 	public String getDescription()
 	{
 		return this.description;
+	}
+	
+	public void setDescription(String s)
+	{
+		this.description = s;
 	}
 	
 	public void setStatus(String s)
@@ -50,10 +68,6 @@ public class Square
 		}
 	}
 	
-	public void setStatus(int i)
-	{
-		this.count = i;
-	}
 	
 	public void setCount(int i)
 	{
