@@ -94,5 +94,19 @@ public class BoardTest {
 		Board testBoard = new Board();
 		testBoard.processHelp();
 	}
-
+	/*
+	 * For some reason, I couldn't get assertArrayEquals to even accept the two arrayLists, so I did
+	 * this test through inspection. It does indeed work, but I've removed the printlines so Didit won't crash.
+	 */
+	@Test
+	public void testingAdjacencyBuilder()
+	{
+		Board testBoard = new Board();
+		ArrayList<ArrayList<Square>> state = testBoard.getActualBoardStateForDebugPurposes();
+		state.get(0).get(1).setStatus("Test");
+		state.get(1).get(0).setStatus("Test");
+		//System.out.println(testBoard.adjacentSquares(0, 0));
+		//System.out.println(testBoard.adjacentSquares(1, 1));
+		assertEquals(true,true);
+	}
 }

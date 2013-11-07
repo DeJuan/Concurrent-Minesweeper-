@@ -105,11 +105,12 @@ public class Board
 		Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
 		ArrayList<Square> visited = new ArrayList<Square>();
 		squareQueue.add(boardState.get(0).get(0));
-		while (! squareQueue.isEmpty())
+		while (!squareQueue.isEmpty())
 		{
 			int bombsFound = 0;
 			Square currentSquare = squareQueue.poll();
 			visited.add(currentSquare);
+			System.out.println(visited);
 			int x = (int) currentSquare.getLocation().get(0);
 			int y = (int) currentSquare.getLocation().get(1);
 			ArrayList<Square> currentAdj = adjacentSquares(x,y);
@@ -241,7 +242,7 @@ public class Board
 	{
 		ArrayList<Square> adjacencyList = new ArrayList<Square>();
 		int rightOne = locationDataX+1;
-		int leftOne = locationDataX+1;
+		int leftOne = locationDataX-1;
 		int upOne = locationDataY-1;
 		int downOne = locationDataY+1;
 		Square Northwest;
@@ -268,17 +269,20 @@ public class Board
 		{
 			
 			East = boardState.get(rightOne).get(locationDataY);
+			//System.out.println("Adding East, located at (" + rightOne +"," + locationDataY + ")");
 			adjacencyList.add(East);
 			
 			if(upValid)
 			{
 				Northeast = boardState.get(rightOne).get(upOne);
+				//System.out.println("Adding NorthEast, located at (" + rightOne +"," + upOne + ")");
 				adjacencyList.add(Northeast);
 			}
 			
 			if(downValid)
 			{
 				Southeast = boardState.get(rightOne).get(downOne);
+				//System.out.println("Adding Southeast, located at (" + rightOne +"," + downOne + ")");
 				adjacencyList.add(Southeast);
 			}
 		}
@@ -286,30 +290,35 @@ public class Board
 		if(upValid)
 		{
 			North = boardState.get(locationDataX).get(upOne);
+			//System.out.println("Adding North, located at (" + locationDataX +"," + upOne + ")");
 			adjacencyList.add(North);
 		}
 		
 		if(downValid)
 		{
 			South = boardState.get(locationDataX).get(downOne);
+			//System.out.println("Adding South, located at (" + locationDataX +"," + downOne + ")");
 			adjacencyList.add(South);
 		}
 		
-		if(leftOne > 0)
+		if(leftOne >= 0)
 		{
 			
 			West = boardState.get(leftOne).get(locationDataY);
+			//System.out.println("Adding west, located at (" + leftOne +"," + locationDataY + ")");
 			adjacencyList.add(West);
 			
 			if(upValid)
 			{
 				Northwest = boardState.get(leftOne).get(upOne);
+				//System.out.println("Adding Northwest, located at (" + leftOne +"," + upOne + ")");
 				adjacencyList.add(Northwest);
 			}
 			
 			if(downValid)
 			{
 				Southwest = boardState.get(leftOne).get(downOne);
+				//System.out.println("Adding Southwest, located at (" + leftOne +"," + downOne + ")");
 				adjacencyList.add(Southwest);
 				
 			}
