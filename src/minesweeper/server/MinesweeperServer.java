@@ -101,11 +101,16 @@ public class MinesweeperServer {
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 String output = handleRequest(line, board);
-                if (output != null) {
+                if (output != null) 
+                {
                     out.println(output);
-                if (output == "Baibai!" || output == "BOOM!"){
-                	socket.close();
-                }
+                    if (!debug)
+                    {
+                    	if (output == "Baibai!" || output == "BOOM!")
+                    	{
+                    		socket.close();
+                    	}
+                    }
                 }
             }
         } finally {

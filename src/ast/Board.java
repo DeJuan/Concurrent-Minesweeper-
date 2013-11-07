@@ -94,7 +94,7 @@ public class Board
 		{
 			for(int col = 0; col < this.size; col++)
 			{
-				boardString.append(this.boardState.get(row).get(col).toString());
+				boardString.append(this.boardState.get(col).get(row).toString());
 			}
 			boardString.append("\r\n");
 		}
@@ -194,7 +194,12 @@ public class Board
 	{
 		int X = Integer.valueOf(input.substring(5, 6));
 		int Y = Integer.valueOf(input.substring(7, 8));
-		boardState.get(X).get(Y).setStatus("F");
+		if(X < 0 || X >= this.size || Y < 0 || Y >= this.size)
+		{
+			return this.toString();
+		}
+		System.out.println(X + "," + Y);
+		boardState.get(Y).get(X).setStatus("F");
 		return this.toString();
 	}
 	
@@ -209,12 +214,15 @@ public class Board
 	{
 		int X = Integer.valueOf(input.substring(7,8));
 		int Y = Integer.valueOf(input.substring(9,10));
-		Square squareRequested = boardState.get(X).get(Y);
-		if (squareRequested.getDescription() == "flagged"){
-				squareRequested.setStatus("-");
-				
+		if(X < 0 || X >= this.size || Y < 0 || Y >= this.size)
+		{
+			return this.toString();
 		}
-		checkRep();
+		Square squareRequested = boardState.get(X).get(Y);
+		if (squareRequested.getStatus() == "F")
+		{
+				squareRequested.setStatus("-");		
+		}
 		return this.toString();
 	}
 	/**
@@ -242,30 +250,31 @@ public class Board
 	 */
 	public synchronized String processDig(String input)
 	{
-		boolean bombHit = false;
+		//boolean bombHit = false;
 		//Input is dig_X_Y
 		int locationDataX = Integer.valueOf(input.substring(4,5));
 		int locationDataY = Integer.valueOf(input.substring(6,7));
 		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
-			return processLook();
+			return this.toString();
 		}
 		//At this point, we know the square indicated exists, so this next line is okay to do:
-		Square requestedSquare = boardState.get(locationDataX).get(locationDataY);
+		Square requestedSquare = boardState.get(locationDataY).get(locationDataX);
 		
 		//If this is true, we've already dug it or flagged it so leave it be & return current state. 
-		if(requestedSquare.getDescription() != "untouched" && requestedSquare.getDescription() != "bomb")
+		if(requestedSquare.getStatus() == "F" || (requestedSquare.getDescription() != "untouched" && requestedSquare.getDescription() != "bomb") )
 		{
 			return this.toString();
 		}
 		
 		//Hard section. What to do if we get a bomb. 
-		if(requestedSquare.getDescription() == "bomb")
+		else if(requestedSquare.getDescription() == "bomb")
 		{
-			requestedSquare.setStatus("-"); //Clear the bomb away. We're going to cascade into the next section and explore this.
-			bombHit = true;
+			requestedSquare.setDescription("dug");
+			//Clear the bomb away. We're going to cascade into the next section and explore this.
+			//bombHit = true;
 			//Compose an array list containing all squares adjacent to this one. 
-			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
+			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataY,locationDataX);
 			
 			//We want to examine every square around these adjacent squares, and bombcount for all of them.
 			for (Square s: adjacentToThisSquare)
@@ -281,11 +290,71 @@ public class Board
 						bombsFound +=1; //Increment our bombsFound counter.
 					}
 				}
-				s.setCount(bombsFound); //Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
+				s.setCount(bombsFound);
+				//Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
+			 
 			}
-			//We will cascade directly into the next step since we left it as if and not else if.
+			requestedSquare.setStatus(" ");
+			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
+			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
+			squareQueue.addAll(adjacents);
+			ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
+			while (!squareQueue.isEmpty()){
+				Square s = squareQueue.poll();
+				visited.add(s.getLocation());
+				if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
+				{
+					s.setStatus(" ");
+					int xLoc = (int) s.getLocation().get(0);
+					int yLoc = (int) s.getLocation().get(1);
+					ArrayList<Square> prospects = (adjacentSquares(yLoc,xLoc));
+					for (Square m: prospects)
+					{
+						if(!visited.contains(m.getLocation()))
+						{
+							squareQueue.add(m);
+							visited.add(m.getLocation());
+						}
+					}
+					
+				}
+			}
+			return "BOOM!";	
 		}
-		if (requestedSquare.getDescription() == "untouched"){
+		if (requestedSquare.getDescription() == "untouched")
+			{
+				requestedSquare.setStatus(" ");
+				ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
+				Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
+				squareQueue.addAll(adjacents);
+				ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
+				while (!squareQueue.isEmpty())
+				{
+					Square s = squareQueue.poll();
+					visited.add(s.getLocation());
+					if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
+					{
+						s.setStatus(" ");
+						int xLoc = (int) s.getLocation().get(0);
+						int yLoc = (int) s.getLocation().get(1);
+						ArrayList<Square> prospects = (adjacentSquares(yLoc,xLoc));
+						for (Square m: prospects)
+						{
+							if(!visited.contains(m.getLocation()))
+							{
+								squareQueue.add(m);
+								visited.add(m.getLocation());
+							}
+						}
+						
+					}
+				}
+				return this.toString();	
+			}
+			
+		
+		
+		else if (requestedSquare.getDescription() == "untouched"){
 			requestedSquare.setStatus(" ");
 			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
 			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
@@ -311,11 +380,7 @@ public class Board
 					
 				}
 			}
-			if(bombHit)
-			{
-				return "BOOM!";
-				
-			}
+			
 			return this.toString();
 		}
 		return this.toString();

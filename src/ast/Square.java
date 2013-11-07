@@ -60,14 +60,14 @@ public class Square
 		this.status = s;
 		if (this.status == "-")
 		{
-			this.description = "untouched";
+		//	this.description = "untouched";
 		}
-		if(this.status == "F")
+		else if(this.status == "F")
 		{
-			this.description = "flagged";
+			//this.description = "flagged";
 		}
 		
-		if (this.status == " ")
+		else if (this.status == " ")
 		{
 			this.description = "dug";
 			if(count != 0)

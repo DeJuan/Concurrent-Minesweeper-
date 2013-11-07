@@ -64,8 +64,8 @@ public class BoardTest {
 		expectation[5][5] = "F";
 		testBoard.processFlag("flag 5 5");
 		assertArrayEquals(expectation, testBoard.getBoardState());
-		ArrayList<ArrayList<Square>> actualState = testBoard.getActualBoardStateForDebugPurposes();
-		assertEquals("flagged", actualState.get(5).get(5).getDescription());
+
+		
 	}
 	
 	@Test
