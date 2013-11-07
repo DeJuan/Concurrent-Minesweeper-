@@ -21,21 +21,17 @@ public class Board
 	public Board()
 	{
 		this.size = 10;
-		ArrayList<Square> row = new ArrayList<Square>();
-		Square space = new Square();
-		for(int i = 0; i < this.size; i++)
-		{
-			row.add(space);
-		}
+		
 		this.boardState = new ArrayList<ArrayList<Square>>();
 		for(int j = 0; j < this.size; j++)
 		{
-			this.boardState.add(row);
+			this.boardState.add(createRow());
 		}
 	}
 	/*
 	 * If we do have a size we want, use it
 	 */
+	
 	public Board(int size)
 	{	
 		if (size <= 0)
@@ -93,6 +89,11 @@ public class Board
 		}
 		return boardRep;
 	}
+	
+	public ArrayList<ArrayList<Square>> getActualBoardStateForDebugPurposes()
+	{
+		return this.boardState;
+	}
 	/*
 	 * User-to-Server Minesweeper Message Protocol
   MESSAGE     :== ( LOOK | DIG | FLAG | DEFLAG | HELP_REQ | BYE ) NEWLINE
@@ -113,11 +114,29 @@ public class Board
 		return this.toString();
 	}
 	
+	public String processFlag(String input)
+	{
+		int X = Integer.valueOf(input.substring(5, 6));
+		int Y = Integer.valueOf(input.substring(7, 8));
+		boardState.get(X).get(Y).setStatus("F");
+		return this.toString();
+	}
+	
+	public String processDeflag(String input)//string is "deflag_X_Y"
+	{
+		int X = Integer.valueOf(input.substring(7,8));
+		int Y = Integer.valueOf(input.substring(9,10));
+		Square squareRequested = boardState.get(X).get(Y);
+		if (squareRequested.getDescription() == "flagged"){
+				squareRequested.setStatus("-");
+		}
+		return this.toString();
+	}
 	public String processDig(String input)
 	{
 		//Input is dig_X_Y
-		int locationDataX = Integer.parseInt(input.substring(4,5));
-		int locationDataY = Integer.parseInt(input.substring(6));
+		int locationDataX = Integer.valueOf(input.substring(4,5));
+		int locationDataY = Integer.valueOf(input.substring(6,7));
 		if(locationDataX < 0 || locationDataX > this.size || locationDataY < 0 || locationDataY > this.size)
 		{
 			return processLook();
@@ -134,14 +153,14 @@ public class Board
 			requestedSquare.setStatus(" ");
 			int bombCount = 0;
 			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
-			ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare = new ArrayList<Square>();
+			ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare;
 			for (Square s: adjacentToThisSquare)
 			{
 				
 			}
 			
 		}
-		
+		return this.toString();
 	}
 	
 	public ArrayList<Square> adjacentSquares(int locationDataX, int locationDataY)
@@ -229,5 +248,15 @@ public class Board
 		 */
 		
 		
+	}
+	
+	public ArrayList<Square> createRow()
+	{
+		ArrayList<Square> row = new ArrayList<Square>();
+		for(int i = 0; i < this.size; i++)
+		{
+			row.add(new Square());
+		}
+		return row;
 	}
 }
