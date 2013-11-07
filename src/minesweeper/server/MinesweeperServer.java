@@ -130,7 +130,7 @@ public class MinesweeperServer {
                 + "(deflag -?\\d+ -?\\d+)|(help)|(bye)";
         if ( ! input.matches(regex)) {
             // invalid input
-            return null;
+            return board.processLook();
         }
         String[] tokens = input.split(" ");
         if (tokens[0].equals("look")) {
