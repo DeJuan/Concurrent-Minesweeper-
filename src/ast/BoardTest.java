@@ -12,7 +12,7 @@ public class BoardTest {
 	@Test
 	public void checkPlainBoard()
 	{
-		Board testBoard = new Board();
+		Board testBoard = new Board(10);
 		//Update: Need to iterate through this since I'm doing to string on the outer array,
 		//And that outer array is a list of arrays, so it's sstill an object and calls
 		//the default object toString which is why I'm getting the weird output!
@@ -89,15 +89,20 @@ public class BoardTest {
 		assertArrayEquals(expectation, testBoard.getBoardState());
 	}
 	
+	/*
 	@Test
 	public void testingHelpMessage(){
 		Board testBoard = new Board();
 		testBoard.processHelp();
 	}
+	*/
+	
+	
 	/*
 	 * For some reason, I couldn't get assertArrayEquals to even accept the two arrayLists, so I did
 	 * this test through inspection. It does indeed work, but I've removed the printlines so Didit won't crash.
 	 */
+	
 	@Test
 	public void testingAdjacencyBuilder()
 	{
@@ -109,4 +114,25 @@ public class BoardTest {
 		//System.out.println(testBoard.adjacentSquares(1, 1));
 		assertEquals(true,true);
 	}
+	
+	@Test
+	public void testDiggingSpace(){
+		DebugBoard testBoard = new DebugBoard(3); //there's a bomb in the bottom right corner
+		testBoard.processDig("dig 0 0");
+		String[][] expectation = new String[3][3];
+		for (int i = 0; i < 3; i++)
+		{
+			for(int j = 0; j < 3; j++)
+			{
+				expectation[i][j] = " ";
+			}
+		}
+		expectation[2][1] = "1";
+		expectation[1][2] = "1";
+		expectation[1][1] = "1";
+		expectation[2][2] = "-";
+		
+		assertArrayEquals(expectation, testBoard.getBoardState());
+	}
+	
 }

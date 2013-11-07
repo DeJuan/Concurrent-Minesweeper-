@@ -14,19 +14,19 @@ import java.util.concurrent.PriorityBlockingQueue;
  * 
  *
  */
-public class Board
+public class DebugBoard
 {
 	private final int size;
-	private ArrayList<ArrayList<Square>> boardState;
+	private ArrayList<ArrayList<DebugSquare>> boardState;
 	private int rowCounter = 0;
 	
 	/*
 	 * Default constructor: If size not specified, default to 10. 
 	 */
 	
-	public Board(){
+	public DebugBoard(){
 		this.size = 10;
-		this.boardState = new ArrayList<ArrayList<Square>>();
+		this.boardState = new ArrayList<ArrayList<DebugSquare>>();
 		for(int r = 0; r < this.size; r++)
 		{
 			this.boardState.add(createRow());
@@ -38,14 +38,14 @@ public class Board
 	 * If we do have a size we want, use it
 	 */
 	
-	public Board(int size)
+	public DebugBoard(int size)
 	{	
 		if (size <= 0)
 		{
 			throw new IllegalArgumentException("The board cannot have a negative size!");
 		}
 		this.size = size;
-		this.boardState = new ArrayList<ArrayList<Square>>();
+		this.boardState = new ArrayList<ArrayList<DebugSquare>>();
 		for(int r = 0; r < this.size; r++)
 		{
 			this.boardState.add(createRow());
@@ -77,7 +77,7 @@ public class Board
 		return boardString.toString();
 	}
 	/*
-	 * Returns the state of the board. This returns the type of square that it is, i.e.
+	 * Returns the state of the board. This returns the type of DebugSquare that it is, i.e.
 	 * "-", "F", etc.
 	 */
 	
@@ -95,34 +95,34 @@ public class Board
 		return boardRep;
 	}
 	
-	public ArrayList<ArrayList<Square>> getActualBoardStateForDebugPurposes()
+	public ArrayList<ArrayList<DebugSquare>> getActualBoardStateForDebugPurposes()
 	{
 		return this.boardState;
 	}
 	
 	public void setAllCounts()
 	{
-		Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
+		Queue<DebugSquare> squareQueue = new LinkedBlockingQueue<DebugSquare>();
 		ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
 		squareQueue.add(boardState.get(0).get(0));
 		//System.out.println(squareQueue);
 		while (!squareQueue.isEmpty())
 		{
 			int bombsFound = 0;
-			Square currentSquare = squareQueue.poll();
-			//System.out.println("currentSquare is: " + currentSquare.getLocation().toString() + " = " + currentSquare.toString() );
+			DebugSquare currentSquare = squareQueue.poll();
+			//System.out.println("currentDebugSquare is: " + currentSquare.getLocation().toString() + " = " + currentSquare.toString() );
 			visited.add(currentSquare.getLocation());
 			//System.out.println("visited is" + visited);
 			int x = (int) currentSquare.getLocation().get(0);
 			int y = (int) currentSquare.getLocation().get(1);
-			ArrayList<Square> currentAdj = adjacentSquares(x,y);
+			ArrayList<DebugSquare> currentAdj = adjacentSquares(x,y);
 			//System.out.print("adj currently contains: ");
-			//for (Square m: currentAdj){
+			//for (DebugSquare m: currentAdj){
 				//System.out.print(m.getLocation());
 				
 			//}
 			//System.out.print("\n");
-			for(Square s: currentAdj)
+			for(DebugSquare s: currentAdj)
 			{
 				
 				if (s.getDescription() == "bomb")
@@ -173,7 +173,7 @@ public class Board
 	{
 		int X = Integer.valueOf(input.substring(7,8));
 		int Y = Integer.valueOf(input.substring(9,10));
-		Square squareRequested = boardState.get(X).get(Y);
+		DebugSquare squareRequested = boardState.get(X).get(Y);
 		if (squareRequested.getDescription() == "flagged"){
 				squareRequested.setStatus("-");
 				
@@ -190,12 +190,13 @@ public class Board
 		//Input is dig_X_Y
 		int locationDataX = Integer.valueOf(input.substring(4,5));
 		int locationDataY = Integer.valueOf(input.substring(6,7));
+		System.out.println( "Location in question is (" + locationDataX + "," + locationDataY + ")" );
 		if(locationDataX < 0 || locationDataX > this.size || locationDataY < 0 || locationDataY > this.size)
 		{
 			return processLook();
 		}
-		//At this point, we know the square indicated exists, so this next line is okay to do:
-		Square requestedSquare = boardState.get(locationDataX).get(locationDataY);
+		//At this point, we know the DebugSquare indicated exists, so this next line is okay to do:
+		DebugSquare requestedSquare = boardState.get(locationDataX).get(locationDataY);
 		
 		//If this is true, we've already dug it or flagged it so leave it be & return current state. 
 		if(requestedSquare.getDescription() != "untouched")
@@ -209,47 +210,50 @@ public class Board
 			requestedSquare.setStatus(" "); //Clear the bomb away.
 		
 			//Compose an array list containing all squares adjacent to this one. 
-			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
+			ArrayList<DebugSquare> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
 			
-			//We want to examine every square around these adjacent squares, and bombcount for all of them.
-			for (Square s: adjacentToThisSquare)
+			//We want to examine every DebugSquare around these adjacent squares, and bombcount for all of them.
+			for (DebugSquare s: adjacentToThisSquare)
 			{
 				int bombsFound = 0; //Number of adjacent bombs
 				int xData = (int) s.getLocation().get(0); //This square's X location
 				int yData = (int) s.getLocation().get(1); //This squares Y location
-				ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare = adjacentSquares(xData,yData); //Use it to call adjacency again
-				for (Square newLevel : squaresAdjacentToSquaresAdjacentToThisSquare) //For every square we just located:
+				ArrayList<DebugSquare> squaresAdjacentToSquaresAdjacentToThisSquare = adjacentSquares(xData,yData); //Use it to call adjacency again
+				for (DebugSquare newLevel : squaresAdjacentToSquaresAdjacentToThisSquare) //For every DebugSquare we just located:
 				{
-					if (newLevel.getStatus() == "bomb") //If that square is a bomb:
+					if (newLevel.getStatus() == "bomb") //If that DebugSquare is a bomb:
 					{
 						bombsFound +=1; //Increment our bombsFound counter.
 					}
 				}
-				s.setCount(bombsFound); //Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
+				s.setCount(bombsFound); //Lastly, set the count of that DebugSquare to bombsFound and restart, reinitializing everything for the next square.
 			}
 			return "BOOM!";
 		}
 		if (requestedSquare.getDescription() == "untouched"){
-			requestedSquare.setStatus(" ");
-			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
-			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
-			squareQueue.addAll(adjacents);
+			System.out.println("Hit the untouched message");
+			requestedSquare.setStatus(" "); // change to dug
+			ArrayList<DebugSquare> adjacents = adjacentSquares(locationDataX, locationDataY);
+			Queue<DebugSquare> squareQueue = new LinkedBlockingQueue<DebugSquare>();
 			ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
+			squareQueue.addAll(adjacents);
 			while (!squareQueue.isEmpty()){
-				Square s = squareQueue.poll();
+				DebugSquare s = squareQueue.poll();
 				visited.add(s.getLocation());
+				System.out.println("currentSquare is: " + s.getLocation().toString() + " = " + s.toString() );
 				if (s.getDescription() != "bomb")
-				
 				{
 					s.setStatus(" ");
 					int xLoc = (int) s.getLocation().get(0);
 					int yLoc = (int) s.getLocation().get(1);
-					ArrayList<Square> prospects = (adjacentSquares(xLoc,yLoc));
-					for (Square m: prospects)
+					ArrayList<DebugSquare> prospects = (adjacentSquares(xLoc,yLoc));
+					for (DebugSquare m: prospects)
 					{
+						System.out.println("Current prospect is" + m.getLocation());
 						if(!visited.contains(m.getLocation()))
 						{
 							squareQueue.add(m);
+							//System.out.println("Adding " + m.getLocation() + "to queue and visited.");
 							visited.add(m.getLocation());
 						}
 					}
@@ -261,21 +265,22 @@ public class Board
 		return this.toString();
 	}
 	
-	public ArrayList<Square> adjacentSquares(int locationDataX, int locationDataY)
+	
+	public ArrayList<DebugSquare> adjacentSquares(int locationDataX, int locationDataY)
 	{
-		ArrayList<Square> adjacencyList = new ArrayList<Square>();
+		ArrayList<DebugSquare> adjacencyList = new ArrayList<DebugSquare>();
 		int rightOne = locationDataX+1;
 		int leftOne = locationDataX-1;
 		int upOne = locationDataY-1;
 		int downOne = locationDataY+1;
-		Square Northwest;
-		Square North;
-		Square Northeast;
-		Square West;
-		Square East;
-		Square Southwest;
-		Square South;
-		Square Southeast;
+		DebugSquare Northwest;
+		DebugSquare North;
+		DebugSquare Northeast;
+		DebugSquare West;
+		DebugSquare East;
+		DebugSquare Southwest;
+		DebugSquare South;
+		DebugSquare Southeast;
 		boolean upValid = true;
 		boolean downValid = true;
 		if (upOne < 0)
@@ -356,13 +361,13 @@ public class Board
 		
 	}
 	
-	public ArrayList<Square> createRow()
+	public ArrayList<DebugSquare> createRow()
 	{
 		
-		ArrayList<Square> row = new ArrayList<Square>();
+		ArrayList<DebugSquare> row = new ArrayList<DebugSquare>();
 		for(int j = 0; j < this.size; j++)
 		{
-			row.add(new Square(this.rowCounter, j));
+			row.add(new DebugSquare(this.rowCounter, j));
 		}
 		this.rowCounter +=1;
 		return row;
