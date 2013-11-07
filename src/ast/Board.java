@@ -223,14 +223,14 @@ public class Board
 				ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare = adjacentSquares(xData,yData); //Use it to call adjacency again
 				for (Square newLevel : squaresAdjacentToSquaresAdjacentToThisSquare) //For every square we just located:
 				{
-					if (newLevel.getStatus() == "bomb") //If that square is a bomb:
+					if (newLevel.getDescription() == "bomb") //If that square is a bomb:
 					{
 						bombsFound +=1; //Increment our bombsFound counter.
 					}
 				}
 				s.setCount(bombsFound); //Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
 			}
-			//We will cascade directly into the next step since we left it as if and not elif.
+			//We will cascade directly into the next step since we left it as if and not else if.
 		}
 		if (requestedSquare.getDescription() == "untouched"){
 			requestedSquare.setStatus(" ");

@@ -219,13 +219,14 @@ public class DebugBoard2
 			//We want to examine every DebugSquare2 around these adjacent squares, and bombcount for all of them.
 			for (DebugSquare2 s: adjacentToThisSquare)
 			{
+				System.out.println("This is the square whose adj is being examined: " + s.getLocation());
 				int bombsFound = 0; //Number of adjacent bombs
 				int xData = (int) s.getLocation().get(0); //This square's X location
 				int yData = (int) s.getLocation().get(1); //This squares Y location
 				ArrayList<DebugSquare2> squaresAdjacentToSquaresAdjacentToThisSquare = adjacentSquares(xData,yData); //Use it to call adjacency again
 				for (DebugSquare2 newLevel : squaresAdjacentToSquaresAdjacentToThisSquare) //For every DebugSquare2 we just located:
 				{
-					if (newLevel.getStatus() == "bomb") //If that DebugSquare2 is a bomb:
+					if (newLevel.getDescription() == "bomb") //If that DebugSquare2 is a bomb:
 					{
 						bombsFound +=1; //Increment our bombsFound counter.
 					}
