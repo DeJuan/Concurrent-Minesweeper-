@@ -8,11 +8,12 @@ import static org.junit.Assert.*;
 
 
 public class BoardTest {
-	/*
+	
 	@Test
 	public void checkPlainBoard()
 	{
 		Board testBoard = new Board(10);
+		testBoard.checkRep();
 		//Update: Need to iterate through this since I'm doing to string on the outer array,
 		//And that outer array is a list of arrays, so it's sstill an object and calls
 		//the default object toString which is why I'm getting the weird output!
@@ -33,6 +34,7 @@ public class BoardTest {
 	public void checkBoardWithSizeSpec()
 	{
 		Board testBoard = new Board(15);
+		testBoard.checkRep();
 		assertEquals(15, testBoard.getBoardSize());
 		String[][] expectation = new String[15][15];
 		for (int i = 0; i < 15; i++)
@@ -49,6 +51,7 @@ public class BoardTest {
 	public void checkFlaggingASpace()
 	{
 		Board testBoard = new Board();
+		testBoard.checkRep();
 		assertEquals(10, testBoard.getBoardSize());
 		String[][] expectation = new String[10][10];
 		for (int i = 0; i < 10; i++)
@@ -69,6 +72,7 @@ public class BoardTest {
 	public void checkFlaggingThenDeflaggingSpaces()
 	{
 		Board testBoard = new Board();
+		testBoard.checkRep();
 		String[][] expectation = new String[10][10];
 		for (int i = 0; i < 10; i++)
 		{
@@ -93,6 +97,7 @@ public class BoardTest {
 	@Test
 	public void testingHelpMessage(){
 		Board testBoard = new Board();
+		testBoard.checkRep();
 		testBoard.processHelp();
 	}
 	
@@ -107,6 +112,7 @@ public class BoardTest {
 	public void testingAdjacencyBuilder()
 	{
 		Board testBoard = new Board();
+		testBoard.checkRep();
 		ArrayList<ArrayList<Square>> state = testBoard.getActualBoardStateForDebugPurposes();
 		state.get(0).get(1).setStatus("Test");
 		state.get(1).get(0).setStatus("Test");
@@ -118,6 +124,7 @@ public class BoardTest {
 	@Test
 	public void testDiggingSpace(){
 		DebugBoard testBoard = new DebugBoard(3); //there's a bomb in the bottom right corner
+		testBoard.checkRep();
 		testBoard.processDig("dig 0 0");
 		String[][] expectation = new String[3][3];
 		for (int i = 0; i < 3; i++)
@@ -138,6 +145,7 @@ public class BoardTest {
 	@Test
 	public void testDiggingInBiggerSpace(){
 		DebugBoard testBoard = new DebugBoard(5); //there's a bomb in the middle now
+		testBoard.checkRep();
 		testBoard.processDig("dig 0 0");
 		String[][] expectation = new String[5][5];
 		for (int i = 0; i < 5; i++)
@@ -164,15 +172,17 @@ public class BoardTest {
 	public void testDetonatingBomb()
 	{
 		DebugBoard testBoard = new DebugBoard(3);
+		testBoard.checkRep();
 		String result = testBoard.processDig("dig 2 2");
 		System.out.println(testBoard.toString());
 		assertEquals("BOOM!", result);
 	}
-	*/
+	
 	@Test
 	public void testTwoBombField()
 	{
 		DebugBoard2 testBoard = new DebugBoard2(3);
+		testBoard.checkRep();
 		testBoard.processDig("dig 1 1");
 		String[][] expectation = new String[3][3];
 		for (int i = 0; i < 3; i++)
@@ -195,6 +205,7 @@ public class BoardTest {
 	public void testTwoBombFieldBombDetonationAndRelabeling()
 	{
 		DebugBoard2 testBoard = new DebugBoard2(3);
+		testBoard.checkRep();
 		String result = testBoard.processDig("dig 2 1");
 		String[][] expectation = new String[3][3];
 		for (int i = 0; i < 3; i++)

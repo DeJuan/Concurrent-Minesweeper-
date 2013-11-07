@@ -8,7 +8,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
- * This class is used to represent the board state for our implementation of Minesweeper.
+ * This class is used to represent a different specific board state for testing our implementation.
+ * It is different from the other two in that on any board of size >=3, it will
+ * create two bombs, one at (0,1), and the other at (2,1).
  * It has a single representation invariant:
  * 1) Size must not be negative.
  * 
@@ -21,6 +23,10 @@ public class DebugBoard2
 	private int rowCounter = 0;
 	//private boolean hitBomb = false;
 	
+	public void checkRep()
+	{
+		assert(this.size >= 2);
+	}
 	/*
 	 * Default constructor: If size not specified, default to 10. 
 	 */

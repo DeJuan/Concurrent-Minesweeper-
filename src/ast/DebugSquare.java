@@ -12,7 +12,7 @@ public class DebugSquare
 	private int count;
 	private final ArrayList<Integer> location = new ArrayList<Integer>();
 
-
+	
 	public DebugSquare(int x, int y)
 	{
 		location.add(x);

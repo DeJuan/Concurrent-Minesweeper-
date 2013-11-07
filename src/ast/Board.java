@@ -20,8 +20,8 @@ public class Board
 	public void checkRep(){
 		assert(this.size >= 2);
 	}
-	/*
-	 * Default constructor: If size not specified, default to 10. 
+	/**
+	 * Default constructor: If size not specified, creates a Board instance of size 10x10. 
 	 */
 	
 	public Board(){
@@ -35,8 +35,9 @@ public class Board
 		checkRep();
 	}
 	
-	/*
-	 * If we do have a size we want, use it
+	/**
+	 * If we do have a size we want, use it to construct the board.
+	 * @param int size, used to initialize board of sizexsize squares
 	 */
 	
 	public Board(int size)
@@ -56,15 +57,26 @@ public class Board
 	}
 	
 	
-	/*
-	 * Returns the board size.  We shouldn't ever change size once the board
-	 * has been created, so it's a final.
+	/**
+	 * Returns the board size.  We never change size once the board
+	 * has been created. so size is a final variable.
 	 */
 	public int getBoardSize()
 	{
 		return this.size;
 	}
 	
+	/**
+	 * This method overrides the normal toString for any Object. It creates a StringBuilder object,
+	 * and iterates through each square in the board, collecting the output of that square's 
+	 * toString() method. It adds newlines to itself for each row completed.
+	 * 
+	 * Once the last square has been visited and its response recorded, we return the StringBuilder's
+	 * accumulated String.
+	 * 
+	 *  @returns A "grid" string representation of the current board as a player should see it.
+	 */
+	@Override
 	public String toString()
 	{
 		StringBuilder boardString = new StringBuilder(this.size*this.size + this.size);
@@ -78,11 +90,11 @@ public class Board
 		}
 		return boardString.toString();
 	}
-	/*
-	 * Returns the state of the board. This returns the type of square that it is, i.e.
+	/**
+	 * Returns the state of the board as a String[][] rather than a normal String. 
+	 * This allows checking for and returning  the type of square that a space is, i.e.
 	 * "-", "F", etc.
 	 */
-	
 	
 	public String[][] getBoardState()
 	{
@@ -96,12 +108,22 @@ public class Board
 		}
 		return boardRep;
 	}
-	
+	/**
+	 * This method is only used in debugging: it returns the actual arrayList we use to store
+	 * all the board information. This is direct rep exposure and will be removed before final release,
+	 * and the codes used to test it in BoardTest commented out. 
+	 * @return ArrayList<ArrayList<Square>> which is the board itself.
+	 */
 	public ArrayList<ArrayList<Square>> getActualBoardStateForDebugPurposes()
 	{
 		return this.boardState;
 	}
 	
+	/**
+	 * This method is only called in the constructor right after we first initialize the board. It executes a 
+	 * BFS starting from the upper left corner of the board, which is position (0,0), 
+	 * and sets the counts for every square in the board as the search expands. 
+	 */
 	public void setAllCounts()
 	{
 		Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
@@ -143,26 +165,21 @@ public class Board
 		}
 			
 	}
-	/*
-	 * User-to-Server Minesweeper Message Protocol
-  MESSAGE     :== ( LOOK | DIG | FLAG | DEFLAG | HELP_REQ | BYE ) NEWLINE
-  LOOK        :== "look"
-  DIG         :== "dig" SPACE X SPACE Y
-  FLAG        :== "flag" SPACE X SPACE Y
-  DEFLAG      :== "deflag" SPACE X SPACE Y
-  HELP_REQ    :== "help"
-  BYE         :== "bye"
-  NEWLINE     :== "\r?\n"
-  X           :== INT
-  Y           :== INT
-  SPACE       :== " "
-  INT         :== [0-9]+
+	/**
+	 * This method returns the current string representation of the board, as a player should see it.
+	 * @return String indicating the current Board state to a player.
 	 */
 	public String processLook()
 	{
 		return this.toString();
 	}
 	
+	/**
+	 * This method allows a player to mark a square as flagged.
+	 * No actions except for unflagging are available to a flagged square.
+	 * @param input: A string in the format "flag X Y" 
+	 * @return String representation of the currentBoard state with the updated Flag.
+	 */
 	public String processFlag(String input)
 	{
 		int X = Integer.valueOf(input.substring(5, 6));
@@ -171,6 +188,13 @@ public class Board
 		return this.toString();
 	}
 	
+	/**
+	 * This method is the only way to return a flagged square to normal.
+	 * It simply removes the flag if there is one, or does nothing otherwise.
+	 * Then it prints the (potentially updated) state of the board.
+	 * @param input: String in the format "deflag X Y" 
+	 * @return String: representation of the board state after execution of deflag
+	 */
 	public String processDeflag(String input)//string is "deflag_X_Y"
 	{
 		int X = Integer.valueOf(input.substring(7,8));
@@ -180,13 +204,32 @@ public class Board
 				squareRequested.setStatus("-");
 				
 		}
+		checkRep();
 		return this.toString();
 	}
-	
-	public void processHelp()
+	/**
+	 * This method simply returns a String indicating all the valid commands and their syntax.
+	 * @return String: helpString indicating commands + syntaxes
+	 */
+	public String processHelp()
 	{
-		  System.out.println("Valid Commands are: (LOOK :== \"look\"  | DIG :== \"dig\" SPACE X SPACE Y  | FLAG  :== \"flag\" SPACE X SPACE Y | DEFLAG :== \"deflag\" SPACE X SPACE Y | HELP_REQ :== \"help\" | BYE :== \"bye\" ) NEWLINE. X and Y are ints.");				 
+		  return("Valid Commands are: (LOOK :== \"look\"  | DIG :== \"dig\" SPACE X SPACE Y  | FLAG  :== \"flag\" SPACE X SPACE Y | DEFLAG :== \"deflag\" SPACE X SPACE Y | HELP_REQ :== \"help\" | BYE :== \"bye\" ) NEWLINE. X and Y are ints.");				 
 	}
+	
+	/**
+	 * This is a very complicated method. It attempts to dig the current square. If the square's already
+	 * been dug, it cancels and returns early with the current board state. Else, it carries out the dig. 
+	 * If you dig an empty square, that square + all surrounding squares change to reflect the dig; 
+	 * any squares with bombs next to them will reveal their counts.  If any of the surrounding squares
+	 * also don't have bombs, the expansion continues from those squares to their adjacents, and so forth.
+	 * 
+	 * If you dig a bomb, some cleanup happens in which it is registered that you hit the bomb, the bomb is removed,
+	 * the states are updated to reflect one less bomb, and a BOOM! message is returned, which should get
+	 * you booted from the server by signaling to terminate your connection.
+	 * @param input String in the format "dig X Y". 
+	 * @return If no bomb, returns updated state of board.
+	 * @return If bomb, returns BOOM!
+	 */
 	public String processDig(String input)
 	{
 		boolean bombHit = false;
@@ -267,6 +310,14 @@ public class Board
 		return this.toString();
 	}
 	
+	/**
+	 * This is a helper method created to acquire all the surrounding squares of any one given square.
+	 * The central square is given by the two parameters of the method: The X indicates row from the
+	 * top of the board down, and the Y indicates the column of the board from left to right.
+	 * @param locationDataX
+	 * @param locationDataY
+	 * @return ArrayList<Square> containing all the adjacent squares to the given location
+	 */
 	public ArrayList<Square> adjacentSquares(int locationDataX, int locationDataY)
 	{
 		ArrayList<Square> adjacencyList = new ArrayList<Square>();
@@ -354,14 +405,15 @@ public class Board
 		}
 		
 		return adjacencyList;
-		/*
-		 * That annoying iterative process we just did needs to be repeated, but slightly different. 
-		 * We should abstract these away into other methods.
-		 */
+		
 		
 		
 	}
-	
+	/**
+	 * Lastly, this method is a helper method used in the constructor. We initialize a new Square
+	 * for every slot in the board, and this method does that for whatever the given size is. 
+	 * @return A row of brand-new squares to be added to the board. 
+	 */
 	public ArrayList<Square> createRow()
 	{
 		
