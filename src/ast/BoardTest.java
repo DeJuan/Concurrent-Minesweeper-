@@ -8,7 +8,7 @@ import static org.junit.Assert.*;
 
 
 public class BoardTest {
-	
+	/*
 	@Test
 	public void checkPlainBoard()
 	{
@@ -89,19 +89,19 @@ public class BoardTest {
 		assertArrayEquals(expectation, testBoard.getBoardState());
 	}
 	
-	/*
+	
 	@Test
 	public void testingHelpMessage(){
 		Board testBoard = new Board();
 		testBoard.processHelp();
 	}
-	*/
 	
 	
-	/*
-	 * For some reason, I couldn't get assertArrayEquals to even accept the two arrayLists, so I did
-	 * this test through inspection. It does indeed work, but I've removed the printlines so Didit won't crash.
-	 */
+	
+	
+	 //For some reason, I couldn't get assertArrayEquals to even accept the two arrayLists, so I did
+	 // this test through inspection. It does indeed work, but I've removed the printlines so Didit won't crash.
+	
 	
 	@Test
 	public void testingAdjacencyBuilder()
@@ -166,6 +166,51 @@ public class BoardTest {
 		DebugBoard testBoard = new DebugBoard(3);
 		String result = testBoard.processDig("dig 2 2");
 		System.out.println(testBoard.toString());
+		assertEquals("BOOM!", result);
+	}
+	*/
+	@Test
+	public void testTwoBombField()
+	{
+		DebugBoard2 testBoard = new DebugBoard2(3);
+		testBoard.processDig("dig 1 1");
+		String[][] expectation = new String[3][3];
+		for (int i = 0; i < 3; i++)
+		{
+			for(int j = 0; j < 3; j++)
+			{
+				expectation[i][j] = "1";
+			}
+		}
+		expectation[0][1] = "-";
+		expectation[1][0] = "2";
+		expectation[1][1] = "2";
+		expectation[1][2] = "2";
+		expectation[2][1] = "-";
+		
+		assertArrayEquals(expectation,testBoard.getBoardState());
+	}
+	
+	@Test
+	public void testTwoBombFieldBombDetonationAndRelabeling()
+	{
+		DebugBoard2 testBoard = new DebugBoard2(3);
+		String result = testBoard.processDig("dig 2 1");
+		String[][] expectation = new String[3][3];
+		for (int i = 0; i < 3; i++)
+		{
+			for(int j = 0; j < 3; j++)
+			{
+				expectation[i][j] = "1";
+			}
+		}
+		expectation[0][1] = "-";
+		expectation[2][0] = " ";
+		expectation[2][1] = " ";
+		expectation[2][2] = " ";
+		
+		System.out.println(testBoard.toString());
+		assertArrayEquals(expectation, testBoard.getBoardState());
 		assertEquals("BOOM!", result);
 	}
 }
