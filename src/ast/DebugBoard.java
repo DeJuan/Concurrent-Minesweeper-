@@ -19,6 +19,7 @@ public class DebugBoard
 	private final int size;
 	private ArrayList<ArrayList<DebugSquare>> boardState;
 	private int rowCounter = 0;
+	//private boolean hitBomb = false;
 	
 	/*
 	 * Default constructor: If size not specified, default to 10. 
@@ -187,11 +188,12 @@ public class DebugBoard
 	}
 	public String processDig(String input)
 	{
+		boolean hitBomb = false;
 		//Input is dig_X_Y
 		int locationDataX = Integer.valueOf(input.substring(4,5));
 		int locationDataY = Integer.valueOf(input.substring(6,7));
 		System.out.println( "Location in question is (" + locationDataX + "," + locationDataY + ")" );
-		if(locationDataX < 0 || locationDataX > this.size || locationDataY < 0 || locationDataY > this.size)
+		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return processLook();
 		}
@@ -199,7 +201,7 @@ public class DebugBoard
 		DebugSquare requestedSquare = boardState.get(locationDataX).get(locationDataY);
 		
 		//If this is true, we've already dug it or flagged it so leave it be & return current state. 
-		if(requestedSquare.getDescription() != "untouched")
+		if(requestedSquare.getDescription() != "untouched" && requestedSquare.getDescription() != "bomb")
 		{
 			return this.toString();
 		}
@@ -207,7 +209,9 @@ public class DebugBoard
 		//Hard section. What to do if we get a bomb. 
 		if(requestedSquare.getDescription() == "bomb")
 		{
-			requestedSquare.setStatus(" "); //Clear the bomb away.
+			System.out.println("We hit a bomb");
+			hitBomb = true;
+			requestedSquare.setStatus("-"); //Clear the bomb away. We temporarily set this so we can cascade down.
 		
 			//Compose an array list containing all squares adjacent to this one. 
 			ArrayList<DebugSquare> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
@@ -228,20 +232,23 @@ public class DebugBoard
 				}
 				s.setCount(bombsFound); //Lastly, set the count of that DebugSquare to bombsFound and restart, reinitializing everything for the next square.
 			}
-			return "BOOM!";
+			//We cascade down into the next section.
 		}
+		
 		if (requestedSquare.getDescription() == "untouched"){
+			System.out.println("BombHit is " + hitBomb);
 			System.out.println("Hit the untouched message");
 			requestedSquare.setStatus(" "); // change to dug
 			ArrayList<DebugSquare> adjacents = adjacentSquares(locationDataX, locationDataY);
 			Queue<DebugSquare> squareQueue = new LinkedBlockingQueue<DebugSquare>();
 			ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
 			squareQueue.addAll(adjacents);
-			while (!squareQueue.isEmpty()){
+			while (!squareQueue.isEmpty())
+			{
 				DebugSquare s = squareQueue.poll();
 				visited.add(s.getLocation());
-				System.out.println("currentSquare is: " + s.getLocation().toString() + " = " + s.toString() );
-				if (s.getDescription() != "bomb")
+				//System.out.println("currentSquare is: " + s.getLocation().toString() + " = " + s.toString() );
+				if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
 				{
 					s.setStatus(" ");
 					int xLoc = (int) s.getLocation().get(0);
@@ -249,7 +256,7 @@ public class DebugBoard
 					ArrayList<DebugSquare> prospects = (adjacentSquares(xLoc,yLoc));
 					for (DebugSquare m: prospects)
 					{
-						System.out.println("Current prospect is" + m.getLocation());
+						//System.out.println("Current prospect is" + m.getLocation());
 						if(!visited.contains(m.getLocation()))
 						{
 							squareQueue.add(m);
@@ -259,6 +266,11 @@ public class DebugBoard
 					}
 					
 				}
+			}
+			if(hitBomb)
+			{
+				System.out.println("We hit the boom line");
+				return "BOOM!";
 			}
 			return this.toString();
 		}

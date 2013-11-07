@@ -135,4 +135,37 @@ public class BoardTest {
 		assertArrayEquals(expectation, testBoard.getBoardState());
 	}
 	
+	@Test
+	public void testDiggingInBiggerSpace(){
+		DebugBoard testBoard = new DebugBoard(5); //there's a bomb in the middle now
+		testBoard.processDig("dig 0 0");
+		String[][] expectation = new String[5][5];
+		for (int i = 0; i < 5; i++)
+		{
+			for(int j = 0; j < 5; j++)
+			{
+				expectation[i][j] = " ";
+			}
+		}
+		//1s all centered around 2 2, so 1 1 1 2 1 3 2 1 2 3 3 1 3 2 3 3 all 1
+		expectation[1][1] = "1";
+		expectation[1][2] = "1";
+		expectation[1][3] = "1";
+		expectation[2][1] = "1";
+		expectation[2][2] = "-";
+		expectation[2][3] = "1";
+		expectation[3][1] = "1";
+		expectation[3][2] = "1";
+		expectation[3][3] = "1";
+		assertArrayEquals(expectation, testBoard.getBoardState());
+	}
+	
+	@Test
+	public void testDetonatingBomb()
+	{
+		DebugBoard testBoard = new DebugBoard(3);
+		String result = testBoard.processDig("dig 2 2");
+		System.out.println(testBoard.toString());
+		assertEquals("BOOM!", result);
+	}
 }

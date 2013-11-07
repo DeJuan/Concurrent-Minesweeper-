@@ -1,17 +1,14 @@
 package ast;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * This class is used to represent the board state for our implementation of Minesweeper.
- * It has a single representation invariant:
+ * It has two representation invariants:
  * 1) Size must not be negative.
- * 
+ * 2) Two threads should not concurrently modify the board. 
  *
  */
 public class Board
@@ -20,6 +17,9 @@ public class Board
 	private ArrayList<ArrayList<Square>> boardState;
 	private int rowCounter = 0;
 	
+	public void checkRep(){
+		assert(this.size >= 2);
+	}
 	/*
 	 * Default constructor: If size not specified, default to 10. 
 	 */
@@ -32,6 +32,7 @@ public class Board
 			this.boardState.add(createRow());
 		}
 		setAllCounts();
+		checkRep();
 	}
 	
 	/*
@@ -40,9 +41,9 @@ public class Board
 	
 	public Board(int size)
 	{	
-		if (size <= 0)
+		if (size <= 1)
 		{
-			throw new IllegalArgumentException("The board cannot have a negative size!");
+			throw new IllegalArgumentException("The board cannot have that size!");
 		}
 		this.size = size;
 		this.boardState = new ArrayList<ArrayList<Square>>();
@@ -51,6 +52,7 @@ public class Board
 			this.boardState.add(createRow());
 		}
 		setAllCounts();
+		checkRep();
 	}
 	
 	
@@ -187,10 +189,11 @@ public class Board
 	}
 	public String processDig(String input)
 	{
+		boolean bombHit = false;
 		//Input is dig_X_Y
 		int locationDataX = Integer.valueOf(input.substring(4,5));
 		int locationDataY = Integer.valueOf(input.substring(6,7));
-		if(locationDataX < 0 || locationDataX > this.size || locationDataY < 0 || locationDataY > this.size)
+		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return processLook();
 		}
@@ -198,7 +201,7 @@ public class Board
 		Square requestedSquare = boardState.get(locationDataX).get(locationDataY);
 		
 		//If this is true, we've already dug it or flagged it so leave it be & return current state. 
-		if(requestedSquare.getDescription() != "untouched")
+		if(requestedSquare.getDescription() != "untouched" && requestedSquare.getDescription() != "bomb")
 		{
 			return this.toString();
 		}
@@ -206,8 +209,8 @@ public class Board
 		//Hard section. What to do if we get a bomb. 
 		if(requestedSquare.getDescription() == "bomb")
 		{
-			requestedSquare.setStatus(" "); //Clear the bomb away.
-		
+			requestedSquare.setStatus("-"); //Clear the bomb away. We're going to cascade into the next section and explore this.
+			bombHit = true;
 			//Compose an array list containing all squares adjacent to this one. 
 			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
 			
@@ -227,7 +230,7 @@ public class Board
 				}
 				s.setCount(bombsFound); //Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
 			}
-			return "BOOM!";
+			//We will cascade directly into the next step since we left it as if and not elif.
 		}
 		if (requestedSquare.getDescription() == "untouched"){
 			requestedSquare.setStatus(" ");
@@ -238,8 +241,7 @@ public class Board
 			while (!squareQueue.isEmpty()){
 				Square s = squareQueue.poll();
 				visited.add(s.getLocation());
-				if (s.getDescription() != "bomb")
-				
+				if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
 				{
 					s.setStatus(" ");
 					int xLoc = (int) s.getLocation().get(0);
@@ -255,6 +257,10 @@ public class Board
 					}
 					
 				}
+			}
+			if(bombHit)
+			{
+				return "BOOM!";
 			}
 			return this.toString();
 		}
