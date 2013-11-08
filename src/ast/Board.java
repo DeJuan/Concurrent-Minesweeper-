@@ -78,12 +78,12 @@ public class Board
 		int count = 0;
 		String output = "";
 		this.boardState = new ArrayList<ArrayList<Square>>();
-		ArrayList<Square> row = new ArrayList<Square>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) 
         {
             String currentLine;
             while ((currentLine = br.readLine()) != null) 
             {
+            	ArrayList<Square> row = new ArrayList<Square>();
             	output += (currentLine + "\r\n");
             	//trim the spaces + newline out
             	output = output.replaceAll("\\s", "");
@@ -96,10 +96,12 @@ public class Board
             	System.out.println(row);
             	boardState.add(row);
             	System.out.println(boardState);
-            	row.clear();
+            	
                 count +=1;
                 output = "";
             }
+            System.out.println("BoardState0 is" + boardState.get(0));
+            System.out.println("BoardState 0 0 is" + boardState.get(0).get(0));
             setAllCounts();
             checkRep();
             
