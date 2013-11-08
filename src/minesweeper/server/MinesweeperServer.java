@@ -5,7 +5,13 @@ import java.net.*;
 import java.util.*;
 
 import ast.Board;
-
+/**
+ * This server is threadsafe because although the board is a public object and everyone is using it, all Board methods
+ * that have any sort of danger towards concurrency enforce the monitor pattern. Even if multiple threads here
+ * call those methods simultaneously, the instructions will be processed in sequence, preventing any possible
+ * executions which would violate our representation.
+ *
+ */
 public class MinesweeperServer {
     private final ServerSocket serverSocket;
     private int playerCounter;

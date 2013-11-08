@@ -10,6 +10,24 @@ public class Square
 	private int count;
 	private final ArrayList<Integer> location = new ArrayList<Integer>();
 	
+	public Square(int x, int y, char determiner)
+	{
+		location.add(x);
+		location.add(y);
+		
+		if (determiner == '1')
+		{
+			this.status = "-";
+			this.description = "bomb";
+		}
+	
+		else
+		{
+			this.status = "-";
+			this.description = "untouched";
+			
+		}
+	}
 	
 	public Square(int x, int y)
 	{

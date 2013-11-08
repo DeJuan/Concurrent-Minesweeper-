@@ -1,5 +1,9 @@
 package ast;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -64,6 +68,39 @@ public class Board
 		}
 		setAllCounts();
 		checkRep();
+	}
+	
+	/**
+	 * Lastly, if we have a particular file we wish to read from disk, we can load that to make our board.
+	 */
+	public Board(File file)
+	{
+		int count = 0;
+		String output = "";
+		ArrayList<Square> row = new ArrayList<Square>();
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) 
+        {
+            String currentLine;
+            while ((currentLine = br.readLine()) != null) 
+            {
+            	output += (currentLine + "\r\n");
+            	for (int index = 0; index < output.length()-1; index++)
+            	{
+            		row.add(new Square(count, index, output.charAt(index)));
+            	}
+            	this.boardState.add(row);
+            	row.clear();
+                count +=1;
+                output = "";
+            }
+            
+        } 
+        
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+        this.size = count;
 	}
 	
 	
