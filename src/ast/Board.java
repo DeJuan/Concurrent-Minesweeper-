@@ -77,6 +77,7 @@ public class Board
 	{
 		int count = 0;
 		String output = "";
+		this.boardState = new ArrayList<ArrayList<Square>>();
 		ArrayList<Square> row = new ArrayList<Square>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) 
         {
@@ -84,15 +85,23 @@ public class Board
             while ((currentLine = br.readLine()) != null) 
             {
             	output += (currentLine + "\r\n");
-            	for (int index = 0; index < output.length()-1; index++)
+            	//trim the spaces + newline out
+            	output = output.replaceAll("\\s", "");
+            	//Output is now in my desired format.
+            	
+            	for (int index = 0; index < output.length(); index++)
             	{
             		row.add(new Square(count, index, output.charAt(index)));
             	}
-            	this.boardState.add(row);
+            	System.out.println(row);
+            	boardState.add(row);
+            	System.out.println(boardState);
             	row.clear();
                 count +=1;
                 output = "";
             }
+            setAllCounts();
+            checkRep();
             
         } 
         
@@ -132,6 +141,7 @@ public class Board
 			for(int col = 0; col < this.size; col++)
 			{
 				boardString.append(this.boardState.get(col).get(row).toString());
+				boardString.append(" ");
 			}
 			boardString.append("\r\n");
 		}
