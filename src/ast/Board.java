@@ -93,15 +93,12 @@ public class Board
             	{
             		row.add(new Square(count, index, output.charAt(index)));
             	}
-            	System.out.println(row);
+            	
             	boardState.add(row);
-            	System.out.println(boardState);
             	
                 count +=1;
                 output = "";
             }
-            System.out.println("BoardState0 is" + boardState.get(0));
-            System.out.println("BoardState 0 0 is" + boardState.get(0).get(0));
             setAllCounts();
             checkRep();
             

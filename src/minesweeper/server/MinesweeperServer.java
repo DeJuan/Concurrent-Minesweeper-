@@ -272,9 +272,9 @@ public class MinesweeperServer {
         
         MinesweeperServer server = new MinesweeperServer(port, debug);
         if (file != null){
-        	System.out.println("Attempting to build board from file");
+        	
         	board = new Board(file);
-        	System.out.println("Board built from file");
+        	
         }
         else if(size != null){
         	board = new Board(size);
