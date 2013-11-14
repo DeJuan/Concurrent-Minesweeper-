@@ -95,11 +95,17 @@ public class Square
 		}
 	}
 	
+	public void setStatus(int i)
+	{
+		this.status = "" + this.count;
+		this.description = "dug";
+	}
 	
 	public void setCount(int i)
 	{
 		this.count = i;
-		if (this.count == 0 && this.description != "untouched" && this.description != "bomb") 
+		/*
+		if (this.count == 0 && this.description != "untouched" && this.description != "bomb" && this.status != "F") 
 		{
 			this.status = " ";
 		}
@@ -108,6 +114,7 @@ public class Square
 		{
 			this.status = "" + this.count;
 		}
+		*/
 	}
 	
 	public int getCount()

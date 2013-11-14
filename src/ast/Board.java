@@ -76,7 +76,6 @@ public class Board
 	public Board(File file)
 	{
 		int count = 0;
-		String output = "";
 		this.boardState = new ArrayList<ArrayList<Square>>();
         try (BufferedReader br = new BufferedReader(new FileReader(file))) 
         {
@@ -84,20 +83,16 @@ public class Board
             while ((currentLine = br.readLine()) != null) 
             {
             	ArrayList<Square> row = new ArrayList<Square>();
-            	output += (currentLine + "\r\n");
-            	//trim the spaces + newline out
+            	String output = (currentLine + "\r\n");
             	output = output.replaceAll("\\s", "");
-            	//Output is now in my desired format.
-            	
             	for (int index = 0; index < output.length(); index++)
             	{
             		row.add(new Square(count, index, output.charAt(index)));
             	}
-            	
-            	boardState.add(row);
-            	
+            	System.out.println(row);
+            	this.boardState.add(row);
+            	//System.out.println("Board size is currently" + boardState.size());
                 count +=1;
-                output = "";
             }
             setAllCounts();
             checkRep();
@@ -140,7 +135,10 @@ public class Board
 			for(int col = 0; col < this.size; col++)
 			{
 				boardString.append(this.boardState.get(col).get(row).toString());
-				boardString.append(" ");
+				if (col != (this.size -1))
+				{
+					boardString.append(" ");
+				}
 			}
 			boardString.append("\r\n");
 		}
@@ -166,8 +164,8 @@ public class Board
 	}
 	/**
 	 * This method is only used in debugging: it returns the actual arrayList we use to store
-	 * all the board information. This is direct rep exposure and will be removed before final release,
-	 * and the codes used to test it in BoardTest commented out. 
+	 * all the board information. This is direct rep exposure and should ONLY be used for debugging.
+	 * NEVER use this method in the Server class.
 	 * @return ArrayList<ArrayList<Square>> which is the board itself.
 	 */
 	public ArrayList<ArrayList<Square>> getActualBoardStateForDebugPurposes()
@@ -186,21 +184,22 @@ public class Board
 		ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
 		squareQueue.add(boardState.get(0).get(0));
 		//System.out.println(squareQueue);
+		int qaweg = 0;
 		while (!squareQueue.isEmpty())
 		{
-			int bombsFound = 0;
 			Square currentSquare = squareQueue.poll();
+			int bombsFound = 0;
 			//System.out.println("currentSquare is: " + currentSquare.getLocation().toString() + " = " + currentSquare.toString() );
-			visited.add(currentSquare.getLocation());
 			//System.out.println("visited is" + visited);
 			int x = (int) currentSquare.getLocation().get(0);
 			int y = (int) currentSquare.getLocation().get(1);
 			ArrayList<Square> currentAdj = adjacentSquares(x,y);
-			//System.out.print("adj currently contains: ");
-			//for (Square m: currentAdj){
-				//System.out.print(m.getLocation());
+		
+			System.out.print("adj currently contains: ");
+			for (Square m: currentAdj){
+				System.out.print(m.getLocation());
 				
-			//}
+			}
 			//System.out.print("\n");
 			for(Square s: currentAdj)
 			{
@@ -214,10 +213,13 @@ public class Board
 				{
 					//System.out.println("Adding" + s.getLocation() + " to the queue");
 					squareQueue.add(s);
-					visited.add(s.getLocation());
+					visited.add(s.getLocation()); //If we don't add it here, any adjacents to it will multi-count their adjacents, etc. 
 				}
 			}
+			//System.out.println("The current square " + currentSquare.getLocation() + " has " + bombsFound + " adjacent bombs and will have its count set as such.");
 			currentSquare.setCount(bombsFound);
+			qaweg +=1;
+			//System.out.println(qaweg);
 		}
 			
 	}
@@ -230,6 +232,16 @@ public class Board
 		return this.toString();
 	}
 	
+	public synchronized String processSpy(String input)
+	{
+		int locationDataX = Integer.valueOf(input.substring(4,5));
+		int locationDataY = Integer.valueOf(input.substring(6,7));
+		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
+		{
+			return this.toString();
+		}
+		return "Square description: " + boardState.get(locationDataX).get(locationDataY).getDescription() + "\n\rSquare bombcount: " + boardState.get(locationDataX).get(locationDataY).getCount();
+	}
 	/**
 	 * This method allows a player to mark a square as flagged.
 	 * No actions except for unflagging are available to a flagged square.
@@ -245,7 +257,7 @@ public class Board
 			return this.toString();
 		}
 		System.out.println(X + "," + Y);
-		boardState.get(Y).get(X).setStatus("F");
+		boardState.get(X).get(Y).setStatus("F");
 		return this.toString();
 	}
 	
@@ -296,16 +308,45 @@ public class Board
 	 */
 	public synchronized String processDig(String input)
 	{
+		int locationDataX;
+		int locationDataY;
 		//boolean bombHit = false;
-		//Input is dig_X_Y
-		int locationDataX = Integer.valueOf(input.substring(4,5));
-		int locationDataY = Integer.valueOf(input.substring(6,7));
+		//Input is dig_X_Y What if X > 10 or Y > 10?
+		if (input.length() == 7)
+		{
+		locationDataX = Integer.valueOf(input.substring(4,5));
+		locationDataY = Integer.valueOf(input.substring(6,7));
+		
+		}
+		
+		else if (input.length() == 8)//dig_XX_Y or dig_X_YY
+		{
+			if ((0 <= Integer.valueOf(input.substring(5,6)) && Integer.valueOf(input.substring(5,6)) <= 9 ))
+				{
+				locationDataX = Integer.valueOf(input.substring(4,6));
+				locationDataY = Integer.valueOf(input.substring(7,8));
+				}
+			else
+				{
+					locationDataX = Integer.valueOf(input.substring(4,5));
+					locationDataY = Integer.valueOf(input.substring(6,8));
+				}
+			
+		}
+		else //dig_XX_YY
+		{
+			locationDataX = Integer.valueOf(input.substring(4,6));
+			locationDataY = Integer.valueOf(input.substring(7,9));
+		}
+		
+		//Invalidity
+		System.out.println("Received Command to Dig at : " + locationDataX + ", " + locationDataY);
 		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return this.toString();
 		}
 		//At this point, we know the square indicated exists, so this next line is okay to do:
-		Square requestedSquare = boardState.get(locationDataY).get(locationDataX);
+		Square requestedSquare = boardState.get(locationDataX).get(locationDataY);
 		
 		//If this is true, we've already dug it or flagged it so leave it be & return current state. 
 		if(requestedSquare.getStatus() == "F" || (requestedSquare.getDescription() != "untouched" && requestedSquare.getDescription() != "bomb") )
@@ -316,11 +357,12 @@ public class Board
 		//Hard section. What to do if we get a bomb. 
 		else if(requestedSquare.getDescription() == "bomb")
 		{
+			//Clear the bomb away. 
+			requestedSquare.setStatus(" ");
 			requestedSquare.setDescription("dug");
-			//Clear the bomb away. We're going to cascade into the next section and explore this.
-			//bombHit = true;
+
 			//Compose an array list containing all squares adjacent to this one. 
-			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataY,locationDataX);
+			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
 			
 			//We want to examine every square around these adjacent squares, and bombcount for all of them.
 			for (Square s: adjacentToThisSquare)
@@ -338,38 +380,14 @@ public class Board
 				}
 				s.setCount(bombsFound);
 				//Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
-			 
-			}
-			requestedSquare.setStatus(" ");
-			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
-			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
-			squareQueue.addAll(adjacents);
-			ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
-			while (!squareQueue.isEmpty()){
-				Square s = squareQueue.poll();
-				visited.add(s.getLocation());
-				if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
-				{
-					s.setStatus(" ");
-					int xLoc = (int) s.getLocation().get(0);
-					int yLoc = (int) s.getLocation().get(1);
-					ArrayList<Square> prospects = (adjacentSquares(yLoc,xLoc));
-					for (Square m: prospects)
-					{
-						if(!visited.contains(m.getLocation()))
-						{
-							squareQueue.add(m);
-							visited.add(m.getLocation());
-						}
-					}
-					
-				}
 			}
 			return "BOOM!";	
 		}
-		if (requestedSquare.getDescription() == "untouched")
+		//If we haven't dug it yet and its count is 0, we -may- want to launch the recursive discovery procedure.
+		if (requestedSquare.getDescription() == "untouched" && requestedSquare.getCount() == 0)
 			{
 				requestedSquare.setStatus(" ");
+				requestedSquare.setDescription("dug");
 				ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
 				Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
 				squareQueue.addAll(adjacents);
@@ -378,12 +396,27 @@ public class Board
 				{
 					Square s = squareQueue.poll();
 					visited.add(s.getLocation());
-					if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
+					if (s.getDescription() == "bomb" || s.getStatus() == "F")
+					{
+						continue;
+					}
+					
+					else 
+					{
+						if (s.getCount() != 0)
+						{
+							s.setStatus(s.getCount());
+							s.setDescription("dug");
+							continue;
+						}
+					
+					else if(s.getCount() == 0)
 					{
 						s.setStatus(" ");
+						s.setDescription("dug");
 						int xLoc = (int) s.getLocation().get(0);
 						int yLoc = (int) s.getLocation().get(1);
-						ArrayList<Square> prospects = (adjacentSquares(yLoc,xLoc));
+						ArrayList<Square> prospects = (adjacentSquares(xLoc,yLoc));
 						for (Square m: prospects)
 						{
 							if(!visited.contains(m.getLocation()))
@@ -395,38 +428,15 @@ public class Board
 						
 					}
 				}
+				}
 				return this.toString();	
 			}
 			
 		
-		
-		else if (requestedSquare.getDescription() == "untouched"){
-			requestedSquare.setStatus(" ");
-			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
-			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
-			squareQueue.addAll(adjacents);
-			ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
-			while (!squareQueue.isEmpty()){
-				Square s = squareQueue.poll();
-				visited.add(s.getLocation());
-				if (s.getDescription() != "bomb" && s.getDescription() != "flagged")
-				{
-					s.setStatus(" ");
-					int xLoc = (int) s.getLocation().get(0);
-					int yLoc = (int) s.getLocation().get(1);
-					ArrayList<Square> prospects = (adjacentSquares(xLoc,yLoc));
-					for (Square m: prospects)
-					{
-						if(!visited.contains(m.getLocation()))
-						{
-							squareQueue.add(m);
-							visited.add(m.getLocation());
-						}
-					}
-					
-				}
-			}
-			
+		//If we haven't dug it yet and it has a count, just reveal the count, update status.
+		else if (requestedSquare.getDescription() == "untouched" && requestedSquare.getCount() != 0){
+			requestedSquare.setStatus(requestedSquare.getCount());
+			requestedSquare.setDescription("dug");
 			return this.toString();
 		}
 		return this.toString();
@@ -457,6 +467,7 @@ public class Board
 		Square Southeast;
 		boolean upValid = true;
 		boolean downValid = true;
+		//System.out.println("The four int based values are: " + rightOne + " , " + leftOne + ", " + upOne + " , " + downOne + ".");
 		if (upOne < 0)
 		{ 
 			upValid = false;
@@ -470,7 +481,7 @@ public class Board
 		if(rightOne < this.size)
 		{
 			
-			East = boardState.get(rightOne).get(locationDataY);
+			East = new Square(rightOne, locationDataY);
 			//System.out.println("Adding East, located at (" + rightOne +"," + locationDataY + ")");
 			adjacencyList.add(East);
 			
@@ -525,7 +536,7 @@ public class Board
 				
 			}
 		}
-		
+		//System.out.println("Adjacency List should be: " + adjacencyList);
 		return adjacencyList;
 		
 		

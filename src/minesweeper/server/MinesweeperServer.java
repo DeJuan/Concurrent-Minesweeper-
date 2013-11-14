@@ -15,7 +15,7 @@ import ast.Board;
 public class MinesweeperServer {
     private final ServerSocket serverSocket;
     private int playerCounter;
-    private Object lock = new Object();
+    private Object lock = new Object(); //Made so that I don't lock on the class. 
     public static Board board;
     /**
      * True if the server should _not_ disconnect a client after a BOOM message.
@@ -34,7 +34,7 @@ public class MinesweeperServer {
     
     public void incrementPlayers()
     {
-    	synchronized(lock)
+    	synchronized(lock) //So I don't hang up the rest of the class or cause any disturbance to current players when a new one connects
     	{
     		playerCounter+=1;
     	}
@@ -42,7 +42,7 @@ public class MinesweeperServer {
 
     public void decrementPlayers()
     {
-    	synchronized(lock)
+    	synchronized(lock) //Same, so there's no problem when someone disconnects.
     	{
     		playerCounter -=1;
     	}
@@ -112,10 +112,14 @@ public class MinesweeperServer {
                     out.println(output);
                     if (!debug)
                     {
-                    	if (output == "Baibai!" || output == "BOOM!")
+                    	if (output == "BOOM!")
                     	{
                     		socket.close();
                     	}
+                    }
+                    if( output == "Baibai!")
+                    {
+                    	socket.close(); //Otherwise you can never escape in debug mode
                     }
                 }
             }
@@ -133,7 +137,7 @@ public class MinesweeperServer {
      */
     private String handleRequest(String input, Board board) {
         String regex = "(look)|(dig -?\\d+ -?\\d+)|(flag -?\\d+ -?\\d+)|"
-                + "(deflag -?\\d+ -?\\d+)|(help)|(bye)";
+                + "(deflag -?\\d+ -?\\d+)|(help)|(bye)|(spy -?\\d+ -?\\d+)";
         if ( ! input.matches(regex)) {
             // invalid input
             return board.processLook();
@@ -161,6 +165,10 @@ public class MinesweeperServer {
             } else if (tokens[0].equals("deflag")) {
                 // 'deflag x y' request
                 return board.processDeflag(input);
+            }
+            else if(tokens[0].equals("spy")){
+            	// "spy x y" request, specifically for me to debug
+            	return board.processSpy(input);
             }
         }
         // Should never get here--make sure to return in each of the valid cases above.
