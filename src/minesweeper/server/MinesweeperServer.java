@@ -103,7 +103,7 @@ public class MinesweeperServer {
     private void handleConnection(Socket socket, Board board) throws IOException {
         BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-        out.println("Welcome To Minesweeper. There are " + playerCounter + " players, including you, at this time.");
+        out.println("Welcome to Minesweeper. " + playerCounter + " people are playing including you. Type 'help' for help. \r\n");
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
                 String output = handleRequest(line, board);

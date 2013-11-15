@@ -195,11 +195,11 @@ public class Board
 			int y = (int) currentSquare.getLocation().get(1);
 			ArrayList<Square> currentAdj = adjacentSquares(x,y);
 		
-			System.out.print("adj currently contains: ");
-			for (Square m: currentAdj){
-				System.out.print(m.getLocation());
-				
-			}
+			//System.out.print("adj currently contains: ");
+			//for (Square m: currentAdj){
+			//	System.out.print(m.getLocation());
+			//	
+			//}
 			//System.out.print("\n");
 			for(Square s: currentAdj)
 			{
@@ -364,9 +364,18 @@ public class Board
 			//Compose an array list containing all squares adjacent to this one. 
 			ArrayList<Square> adjacentToThisSquare = adjacentSquares(locationDataX,locationDataY);
 			
-			//We want to examine every square around these adjacent squares, and bombcount for all of them.
+			//We want to decrement the bomb count for each square adjacent to this one.
 			for (Square s: adjacentToThisSquare)
-			{
+			{	
+				if(s.getCount() > 0)
+				{
+				s.setCount(s.getCount()-1);
+				}
+			}
+			recursiveDig(requestedSquare, locationDataX, locationDataY);
+			return "BOOM!";
+		}
+				/*
 				int bombsFound = 0; //Number of adjacent bombs
 				int xData = (int) s.getLocation().get(0); //This square's X location
 				int yData = (int) s.getLocation().get(1); //This squares Y location
@@ -380,12 +389,18 @@ public class Board
 				}
 				s.setCount(bombsFound);
 				//Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
-			}
-			return "BOOM!";	
-		}
-		//If we haven't dug it yet and its count is 0, we -may- want to launch the recursive discovery procedure.
+				 * 
+				 */
+				
+		
+		//If we haven't dug it yet and its count is 0, we  launch the recursive discovery procedure. It has its own checks.
 		if (requestedSquare.getDescription() == "untouched" && requestedSquare.getCount() == 0)
 			{
+				requestedSquare.setDescription("dug");
+				requestedSquare.setStatus(" ");
+				recursiveDig(requestedSquare, locationDataX, locationDataY);
+			}
+				/*
 				requestedSquare.setStatus(" ");
 				requestedSquare.setDescription("dug");
 				ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
@@ -429,8 +444,10 @@ public class Board
 					}
 				}
 				}
-				return this.toString();	
-			}
+				return this.toString();
+				}
+				*/	
+			
 			
 		
 		//If we haven't dug it yet and it has a count, just reveal the count, update status.
@@ -442,6 +459,53 @@ public class Board
 		return this.toString();
 	}
 	
+	public String recursiveDig(Square requestedSquare, int locationDataX, int locationDataY)
+	{
+			ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
+			Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
+			squareQueue.addAll(adjacents);
+			ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
+			while (!squareQueue.isEmpty())
+			{
+				Square s = squareQueue.poll();
+				visited.add(s.getLocation());
+				if (s.getDescription() == "bomb" || s.getStatus() == "F")
+				{
+					continue;
+				}
+				
+				else 
+				{
+					if (s.getCount() != 0)
+					{
+						s.setStatus(s.getCount());
+						s.setDescription("dug");
+						continue;
+					}
+				
+				else if(s.getCount() == 0)
+				{
+					s.setStatus(" ");
+					s.setDescription("dug");
+					int xLoc = (int) s.getLocation().get(0);
+					int yLoc = (int) s.getLocation().get(1);
+					ArrayList<Square> prospects = (adjacentSquares(xLoc,yLoc));
+					for (Square m: prospects)
+					{
+						if(!visited.contains(m.getLocation()))
+						{
+							squareQueue.add(m);
+							visited.add(m.getLocation());
+						}
+					}
+					
+				}
+			}
+			}
+		
+			return this.toString();	
+		
+	}
 	/**
 	 * This is a helper method created to acquire all the surrounding squares of any one given square.
 	 * The central square is given by the two parameters of the method: The X indicates row from the
@@ -481,7 +545,7 @@ public class Board
 		if(rightOne < this.size)
 		{
 			
-			East = new Square(rightOne, locationDataY);
+			East = boardState.get(rightOne).get(locationDataY);
 			//System.out.println("Adding East, located at (" + rightOne +"," + locationDataY + ")");
 			adjacencyList.add(East);
 			
