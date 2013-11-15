@@ -90,12 +90,9 @@ public class Board
             	output = output.replaceAll("\\s", "");
             	for (int index = 0; index < output.length(); index++)
             	{
-            		System.out.println("Character used to initialize Square (" + count + "," + index + "): " + output.charAt(index));
             		row.add(new Square(count, index, output.charAt(index)));
             	}
-            	//System.out.println(row);
             	this.boardState.add(row);
-            	//System.out.println("Board size is currently" + boardState.size());
                 count +=1;
             }
         }
@@ -356,7 +353,6 @@ public class Board
 		}
 		
 		//Invalidity
-		System.out.println("Received Command to Dig at : " + locationDataX + ", " + locationDataY);
 		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return this.toString();
@@ -424,7 +420,6 @@ public class Board
 		}
 		
 		//Invalidity
-		System.out.println("Received Command to Dig at : " + locationDataX + ", " + locationDataY);
 		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return this.toString();
