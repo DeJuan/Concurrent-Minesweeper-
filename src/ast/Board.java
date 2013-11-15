@@ -22,7 +22,9 @@ import java.util.concurrent.LinkedBlockingQueue;
  * any other synchonized method from being carried out at the same time since there's only one 
  * "this". The methods that aren't synchronized don't need to be, as the players have no way to access
  * those methods, and even if they did, using them concurrently would be fine, with the exception
- * of the constructor, but there's only one board at any time so that's not an issue. 
+ * of the constructor, but there's only one board at any time so that's not an issue.
+ * 
+ *  @author DeJuan Anderson
  */
 public class Board
 {
@@ -169,6 +171,7 @@ public class Board
 	/**
 	 * This method is only used in debugging: it returns the actual arrayList we use to store
 	 * all the board information. This is direct rep exposure and should ONLY be used for debugging.
+	 * It is left here in case future alterations need to be made to the class and then debugged.
 	 * NEVER use this method in the Server class.
 	 * @return ArrayList<ArrayList<Square>> which is the board itself.
 	 */
@@ -187,23 +190,13 @@ public class Board
 		Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
 		ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
 		squareQueue.add(boardState.get(0).get(0));
-		//System.out.println(squareQueue);
 		while (!squareQueue.isEmpty())
 		{
 			Square currentSquare = squareQueue.poll();
 			int bombsFound = 0;
-			//System.out.println("currentSquare is: " + currentSquare.getLocation().toString() + " = " + currentSquare.toString() );
-			//System.out.println("visited is" + visited);
 			int x = (int) currentSquare.getLocation().get(0);
 			int y = (int) currentSquare.getLocation().get(1);
 			ArrayList<Square> currentAdj = adjacentSquares(x,y);
-		
-			//System.out.print("adj currently contains: ");
-			//for (Square m: currentAdj){
-			//	System.out.print(m.getLocation());
-			//	
-			//}
-			//System.out.print("\n");
 			for(Square s: currentAdj)
 			{
 				
@@ -214,18 +207,18 @@ public class Board
 				
 				if (!visited.contains(s.getLocation()))
 				{
-					//System.out.println("Adding" + s.getLocation() + " to the queue");
 					squareQueue.add(s);
 					visited.add(s.getLocation()); //If we don't add it here, any adjacents to it will multi-count their adjacents, etc. 
 				}
 			}
-			//System.out.println("The current square " + currentSquare.getLocation() + " has " + bombsFound + " adjacent bombs and will have its count set as such.");
+			
 			currentSquare.setCount(bombsFound);
 		}
 			
 	}
 	/**
 	 * This method returns the current string representation of the board, as a player should see it.
+	 * This was added just to keep things extremely clear. 
 	 * @return String indicating the current Board state to a player.
 	 */
 	public synchronized String processLook()
@@ -233,16 +226,51 @@ public class Board
 		return this.toString();
 	}
 	
+	/**
+	 * This is a secret method that I added for debugging mid-game and have decided to leave in
+	 * for future fun. It allows one to cheat by getting the description of
+	 * the square and its bomb count without digging it. 
+	 * @param input
+	 * @return Description of desired square.
+	 */
 	public String processSpy(String input)
 	{
-		int locationDataX = Integer.valueOf(input.substring(4,5));
-		int locationDataY = Integer.valueOf(input.substring(6,7));
+		int locationDataX;
+		int locationDataY;
+		if (input.length() == 7)
+		{
+		locationDataX = Integer.valueOf(input.substring(4,5));
+		locationDataY = Integer.valueOf(input.substring(6,7));
+		
+		}
+		
+		else if (input.length() == 8)//spy_XX_Y or spy_X_YY
+		{
+			if ((0 <= Integer.valueOf(input.substring(5,6)) && Integer.valueOf(input.substring(5,6)) <= 9 ))
+				{
+				locationDataX = Integer.valueOf(input.substring(4,6));
+				locationDataY = Integer.valueOf(input.substring(7,8));
+				}
+			else
+				{
+					locationDataX = Integer.valueOf(input.substring(4,5));
+					locationDataY = Integer.valueOf(input.substring(6,8));
+				}
+			
+		}
+		else //spy_XX_YY
+		{
+			locationDataX = Integer.valueOf(input.substring(4,6));
+			locationDataY = Integer.valueOf(input.substring(7,9));
+		}
+		
 		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return this.toString();
 		}
 		return "Square description: " + boardState.get(locationDataY).get(locationDataX).getDescription() + "\n\rSquare bombcount: " + boardState.get(locationDataX).get(locationDataY).getCount();
 	}
+	
 	/**
 	 * This method allows a player to mark a square as flagged.
 	 * No actions except for unflagging are available to a flagged square.
@@ -251,14 +279,41 @@ public class Board
 	 */
 	public synchronized String processFlag(String input)
 	{
-		int X = Integer.valueOf(input.substring(5, 6));
-		int Y = Integer.valueOf(input.substring(7, 8));
-		if(X < 0 || X >= this.size || Y < 0 || Y >= this.size)
+		int locationDataX;
+		int locationDataY;
+		if (input.length() ==8)
+		{
+		locationDataX = Integer.valueOf(input.substring(5,6));
+		locationDataY = Integer.valueOf(input.substring(7,8));
+		
+		}
+		
+		else if (input.length() == 8)//flag_XX_Y or flag_X_YY
+		{
+			if ((0 <= Integer.valueOf(input.substring(5,6)) && Integer.valueOf(input.substring(5,6)) <= 9 ))
+				{
+				locationDataX = Integer.valueOf(input.substring(5,7));
+				locationDataY = Integer.valueOf(input.substring(8,9));
+				}
+			else
+				{
+					locationDataX = Integer.valueOf(input.substring(5,6));
+					locationDataY = Integer.valueOf(input.substring(7,9));
+				}
+			
+		}
+		else //flag_XX_YY
+		{
+			locationDataX = Integer.valueOf(input.substring(5,7));
+			locationDataY = Integer.valueOf(input.substring(8,10));
+		}
+
+		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return this.toString();
 		}
-		System.out.println(X + "," + Y);
-		boardState.get(Y).get(X).setStatus("F");
+		
+		boardState.get(locationDataY).get(locationDataX).setStatus("F");
 		return this.toString();
 	}
 	
@@ -271,13 +326,43 @@ public class Board
 	 */
 	public synchronized String processDeflag(String input)//string is "deflag_X_Y"
 	{
-		int X = Integer.valueOf(input.substring(7,8));
-		int Y = Integer.valueOf(input.substring(9,10));
-		if(X < 0 || X >= this.size || Y < 0 || Y >= this.size)
+		int locationDataX;
+		int locationDataY;
+		if (input.length() == 10)
+		{
+		locationDataX = Integer.valueOf(input.substring(7,8));
+		locationDataY = Integer.valueOf(input.substring(9,10));
+		
+		}
+		
+		else if (input.length() == 11)//deflag_XX_Y or deflag_X_YY
+		{
+			if ((0 <= Integer.valueOf(input.substring(7,8)) && Integer.valueOf(input.substring(8,9)) <= 9 ))
+				{
+				locationDataX = Integer.valueOf(input.substring(7,9));
+				locationDataY = Integer.valueOf(input.substring(10,11));
+				}
+			else
+				{
+					locationDataX = Integer.valueOf(input.substring(7,8));
+					locationDataY = Integer.valueOf(input.substring(9,11));
+				}
+			
+		}
+		else //deflag_XX_YY
+		{
+			locationDataX = Integer.valueOf(input.substring(7,9));
+			locationDataY = Integer.valueOf(input.substring(10,12));
+		}
+		
+		//Invalidity
+		System.out.println("Received Command to Dig at : " + locationDataX + ", " + locationDataY);
+		if(locationDataX < 0 || locationDataX >= this.size || locationDataY < 0 || locationDataY >= this.size)
 		{
 			return this.toString();
 		}
-		Square squareRequested = boardState.get(Y).get(X);
+		
+		Square squareRequested = boardState.get(locationDataY).get(locationDataX);
 		if (squareRequested.getStatus() == "F")
 		{
 				squareRequested.setStatus("-");		
@@ -311,8 +396,6 @@ public class Board
 	{
 		int locationDataX;
 		int locationDataY;
-		//boolean bombHit = false;
-		//Input is dig_X_Y What if X > 10 or Y > 10?
 		if (input.length() == 7)
 		{
 		locationDataX = Integer.valueOf(input.substring(4,5));
@@ -376,24 +459,7 @@ public class Board
 			recursiveDig(requestedSquare, locationDataY, locationDataX);
 			return "BOOM!";
 		}
-				/*
-				int bombsFound = 0; //Number of adjacent bombs
-				int xData = (int) s.getLocation().get(0); //This square's X location
-				int yData = (int) s.getLocation().get(1); //This squares Y location
-				ArrayList<Square> squaresAdjacentToSquaresAdjacentToThisSquare = adjacentSquares(xData,yData); //Use it to call adjacency again
-				for (Square newLevel : squaresAdjacentToSquaresAdjacentToThisSquare) //For every square we just located:
-				{
-					if (newLevel.getDescription() == "bomb") //If that square is a bomb:
-					{
-						bombsFound +=1; //Increment our bombsFound counter.
-					}
-				}
-				s.setCount(bombsFound);
-				//Lastly, set the count of that square to bombsFound and restart, reinitializing everything for the next square.
-				 * 
-				 */
 				
-		
 		//If we haven't dug it yet and its count is 0, we  launch the recursive discovery procedure. It has its own checks.
 		if (requestedSquare.getDescription() == "untouched" && requestedSquare.getCount() == 0)
 			{
@@ -401,55 +467,6 @@ public class Board
 				requestedSquare.setStatus(" ");
 				recursiveDig(requestedSquare, locationDataY, locationDataX);
 			}
-				/*
-				requestedSquare.setStatus(" ");
-				requestedSquare.setDescription("dug");
-				ArrayList<Square> adjacents = adjacentSquares(locationDataX, locationDataY);
-				Queue<Square> squareQueue = new LinkedBlockingQueue<Square>();
-				squareQueue.addAll(adjacents);
-				ArrayList<ArrayList<Integer>> visited = new ArrayList<ArrayList<Integer>>();
-				while (!squareQueue.isEmpty())
-				{
-					Square s = squareQueue.poll();
-					visited.add(s.getLocation());
-					if (s.getDescription() == "bomb" || s.getStatus() == "F")
-					{
-						continue;
-					}
-					
-					else 
-					{
-						if (s.getCount() != 0)
-						{
-							s.setStatus(s.getCount());
-							s.setDescription("dug");
-							continue;
-						}
-					
-					else if(s.getCount() == 0)
-					{
-						s.setStatus(" ");
-						s.setDescription("dug");
-						int xLoc = (int) s.getLocation().get(0);
-						int yLoc = (int) s.getLocation().get(1);
-						ArrayList<Square> prospects = (adjacentSquares(xLoc,yLoc));
-						for (Square m: prospects)
-						{
-							if(!visited.contains(m.getLocation()))
-							{
-								squareQueue.add(m);
-								visited.add(m.getLocation());
-							}
-						}
-						
-					}
-				}
-				}
-				return this.toString();
-				}
-				*/	
-			
-			
 		
 		//If we haven't dug it yet and it has a count, just reveal the count, update status.
 		else if (requestedSquare.getDescription() == "untouched" && requestedSquare.getCount() != 0){
@@ -532,7 +549,6 @@ public class Board
 		Square Southeast;
 		boolean upValid = true;
 		boolean downValid = true;
-		//System.out.println("The four int based values are: " + rightOne + " , " + leftOne + ", " + upOne + " , " + downOne + ".");
 		if (upOne < 0)
 		{ 
 			upValid = false;
@@ -547,20 +563,17 @@ public class Board
 		{
 			
 			East = boardState.get(rightOne).get(locationDataX);
-			//System.out.println("Adding East, located at (" + rightOne +"," + locationDataY + ")");
 			adjacencyList.add(East);
 			
 			if(upValid)
 			{
 				Northeast = boardState.get(rightOne).get(upOne);
-				//System.out.println("Adding NorthEast, located at (" + rightOne +"," + upOne + ")");
 				adjacencyList.add(Northeast);
 			}
 			
 			if(downValid)
 			{
 				Southeast = boardState.get(rightOne).get(downOne);
-				//System.out.println("Adding Southeast, located at (" + rightOne +"," + downOne + ")");
 				adjacencyList.add(Southeast);
 			}
 		}
@@ -568,14 +581,12 @@ public class Board
 		if(upValid)
 		{
 			North = boardState.get(locationDataY).get(upOne);
-			//System.out.println("Adding North, located at (" + locationDataX +"," + upOne + ")");
 			adjacencyList.add(North);
 		}
 		
 		if(downValid)
 		{
 			South = boardState.get(locationDataY).get(downOne);
-			//System.out.println("Adding South, located at (" + locationDataX +"," + downOne + ")");
 			adjacencyList.add(South);
 		}
 		
@@ -583,25 +594,21 @@ public class Board
 		{
 			
 			West = boardState.get(leftOne).get(locationDataX);
-			//System.out.println("Adding west, located at (" + leftOne +"," + locationDataY + ")");
 			adjacencyList.add(West);
 			
 			if(upValid)
 			{
 				Northwest = boardState.get(leftOne).get(upOne);
-				//System.out.println("Adding Northwest, located at (" + leftOne +"," + upOne + ")");
 				adjacencyList.add(Northwest);
 			}
 			
 			if(downValid)
 			{
 				Southwest = boardState.get(leftOne).get(downOne);
-				//System.out.println("Adding Southwest, located at (" + leftOne +"," + downOne + ")");
 				adjacencyList.add(Southwest);
 				
 			}
 		}
-		//System.out.println("Adjacency List should be: " + adjacencyList);
 		return adjacencyList;
 		
 		
