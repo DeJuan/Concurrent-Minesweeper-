@@ -76,16 +76,7 @@ public class Square
 	public void setStatus(String s)
 	{
 		this.status = s;
-		if (this.status == "-")
-		{
-		//	this.description = "untouched";
-		}
-		else if(this.status == "F")
-		{
-			//this.description = "flagged";
-		}
-		
-		else if (this.status == " ")
+		if (this.status == " ")
 		{
 			this.description = "dug";
 			if(count != 0)
@@ -104,17 +95,7 @@ public class Square
 	public void setCount(int i)
 	{
 		this.count = i;
-		/*
-		if (this.count == 0 && this.description != "untouched" && this.description != "bomb" && this.status != "F") 
-		{
-			this.status = " ";
-		}
 		
-		else if(this.count != 0 && this.description != "untouched" && this.description != "bomb")
-		{
-			this.status = "" + this.count;
-		}
-		*/
 	}
 	
 	public int getCount()
