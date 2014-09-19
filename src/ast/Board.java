@@ -226,7 +226,7 @@ public class Board
 	/**
 	 * This is a secret method that I added for debugging mid-game and have decided to leave in
 	 * for future fun. It allows one to cheat by getting the description of
-	 * the square and its bomb count without digging it. Left unsynchronized to add danger to spying.  
+	 * the square and its bomb count without digging it. 
 	 * @param input
 	 * @return Description of desired square.
 	 */
