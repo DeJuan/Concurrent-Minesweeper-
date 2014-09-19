@@ -106,7 +106,6 @@ public class MinesweeperServer {
         out.println("Welcome to Minesweeper. " + playerCounter + " people are playing including you. Type 'help' for help. \r\n");
         try {
             for (String line = in.readLine(); line != null; line = in.readLine()) {
-            	//%TODO: Put in command line backspacing manually. 
                 String output = handleRequest(line, board);
                 if (output != null) 
                 {
